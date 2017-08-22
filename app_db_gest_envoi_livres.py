@@ -139,13 +139,13 @@ class AppBDgestEnvoiLivres :
         """
         * fichier CVS "dbContacts.cvs"
         * table des contacts dans la base de données Postgres
-        
-========
-Nom_contact	: clé primaire
-structure : clé étrangère
-Adresse perso	
-Tel
-E-mail	
+            ========
+            Nom_contact	: clé primaire
+            structure : clé étrangère
+            Adresse perso	
+            Tel
+            E-mail	
+            ========
         SELECT nom_contact 
             FROM table_contacts 
             WHERE nom_contact MATCHES nomCherche
@@ -163,10 +163,28 @@ E-mail
         self.requeteSql=format('INSERT INTO "Librairie".'+ tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,E-mail) VALUES ('+Nom_contact+','+structure+',Adresse_perso+',',Tel+',',E-mail');'
         self.interrogeDataBase(tb_contacts)
     
-    def ajoutStructures(self):
+    def ajoutStructures(self,Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys):
         """
         * fichier CVS "dbStructures.cvs"
         * table des structures dans la base de données Postgres
+            ==============
+            Nom	 : clé primaire
+            Adresse : donnée
+            Code Postal	 	: clé étrangère
+            Tel
+            E-mail	
+            Repré	(diffusion)
+            Groupement	(associations de librairies - ex. librairies atlantique p. Aquitaine)
+            SP (service de presse)		: clé étrangère			
+            Remarque
+            Contact	: clé étrangère
+            Adresse perso	
+            Tel
+            E-mail	
+            Code Postal	 	: clé étrangère
+            Ville	
+            SP		: clé étrangère	
+            ==============
         SELECT nom_structure 
             FROM table_structure 
             WHERE nom_contact MATCHES nomCherche
@@ -179,7 +197,13 @@ E-mail
 	1		permettre l'association d'un même contact avec plusieurs structures	
         un seul envoi pour toutes les fiches associées
         """
-        self.interrogeDataBase("tb_structures")
+        
+        if (self.typeBase == "CVS"):
+            tb_contacts="tb_structures.cvs"
+        else : 
+            tb_structures="tb_structures"
+        self.requeteSql=format('INSERT INTO "Librairie".'+tb_structures+' (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) VALUES ('+Nom_librairie+','+Adresse_lib+','+cp_ville+','+Tel_lib+','+e-mail+','+Repre+','+Groupement+','+Remarque+','+typ_entreprise+','+envoi_sys+');'  
+        self.interrogeDataBase(tb_structures)
     
     def ajoutLivre(self):
         """
@@ -299,9 +323,8 @@ def test_AppBDgestEnvoiLivres (casUtilisation):
         lier les fiches associées pour pouvoir y accéder en passant de l’une à l’autre
     """
     # casUtilisation.ajoutLivre()
-    casUtilisation.ajoutStructure()
-    
-    casUtilisation.ajoutContact("JL Laborde","","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
+    casUtilisation.ajoutStructure("Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all")    
+    casUtilisation.ajoutContact("JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
     casUtilisation.envoiLivre()
     
 if __name__=="__main__" :
