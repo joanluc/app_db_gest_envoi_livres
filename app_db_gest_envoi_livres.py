@@ -267,6 +267,7 @@ class AppBDgestEnvoiLivres :
 	recherche par titre dans la liste d’envoi	
                1		si « seul »	liste sous forme : livre(s), structure et/ou contact, adresse, CP, ville, pays (plus facile pour impression et publipostage)
 	       2		 Si  « groupé »	
+         pour les envois de presse il faut mettre un argumentaire papier avec le livre.
         """   
         self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "tb_envoi" WHERE "tb_envoi"."Titre" MATCHES '+self.nomCherche
         self.interrogeDataBase("tb_envoi")
