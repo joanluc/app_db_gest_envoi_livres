@@ -50,6 +50,31 @@ class AppBDgestEnvoiLivres :
         self.u_secret=getpass.getpass()         
         self.requeteSql=""
         
+    def NoSQL(self,FiCvs) :
+        """
+        Interpréter les requêtes SQL dans un environnement de fichiers CSV
+        """
+        if (self.requeteSql=="SELECT *") :
+            # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
+            # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
+            requeteSql=str(self.requeteSql)
+            FROM=requeteSql.find("FROM") # index 27
+            listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
+            data=fcvs.readline
+        elif (self.requeteSql=="INSERT *") :
+            # Opérations les plus simples : ajout de nouvelles données dans le fichier
+            # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
+            nv_data=self.requeteSql()
+            fcvs.write(nv_data)
+        elif (self.requeteSql=="UPDATE *") :
+            # Opérations complexes : recherche d'une donnée à modifier et écriture des modificatioons
+            # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_tables_CVS)"
+            data=fcvs.readline
+            fcvs.write(nv_data)
+        else :
+            # les autres cas de requête (DELETE | DROP | GRANT | CREATE) ne seront pas implémentés pour des raisons de sécurité des données et aussi parce qu'il est plus sumple d'utiliser un tableur
+            print ("fonctionalité non implémentée")
+        
     def interrogeDataBase(self,tb_FiCvs):
         """
         typeBase,tables
@@ -58,26 +83,7 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             fcvs=open(tb_FiCvs,"r")
             # dans tous les cas le nom de la table impliquée dans la requête sera 
-            if (self.requeteSql=="SELECT *") :
-                # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
-                # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
-                requeteSql=str(self.requeteSql)
-                FROM=requeteSql.find("FROM") # index 27
-                listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
-                data=fcvs.readline
-            elif (self.requeteSql=="INSERT *") :
-                # Opérations les plus simples : ajout de nouvelles données dans le fichier
-                # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
-                nv_data=self.requeteSql()
-                fcvs.write(nv_data)
-            elif (self.requeteSql=="UPDATE *") :
-                # Opérations complexes : recherche d'une donnée à modifier et écriture des modificatioons
-                # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_tables_CVS)"
-                data=fcvs.readline
-                fcvs.write(nv_data)
-            else :
-                # les autres cas de requête (DELETE | DROP | GRANT | CREATE) ne seront pas implémentés pour des raisons de sécurité des données et aussi parce qu'il est plus sumple d'utiliser un tableur
-                print ("fonctionalité non implémentée")
+            NoSQL(tb_FiCvs)
             fcvs.close
         else :
             # self.typeBase == "postgresql"
@@ -261,6 +267,7 @@ class AppBDgestEnvoiLivres :
 	recherche par titre dans la liste d’envoi	
                1		si « seul »	liste sous forme : livre(s), structure et/ou contact, adresse, CP, ville, pays (plus facile pour impression et publipostage)
 	       2		 Si  « groupé »	
+         pour les envois de presse il faut mettre un argumentaire papier avec le livre.
         """   
         self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "tb_envoi" WHERE "tb_envoi"."Titre" MATCHES '+self.nomCherche
         self.interrogeDataBase("tb_envoi")
