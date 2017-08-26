@@ -50,6 +50,31 @@ class AppBDgestEnvoiLivres :
         self.u_secret=getpass.getpass()         
         self.requeteSql=""
         
+    def NoSQL(self,FiCvs) :
+        """
+        Interpréter les requêtes SQL dans un environnement de fichiers CSV
+        """
+        if (self.requeteSql=="SELECT *") :
+            # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
+            # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
+            requeteSql=str(self.requeteSql)
+            FROM=requeteSql.find("FROM") # index 27
+            listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
+            data=fcvs.readline
+        elif (self.requeteSql=="INSERT *") :
+            # Opérations les plus simples : ajout de nouvelles données dans le fichier
+            # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
+            nv_data=self.requeteSql()
+            fcvs.write(nv_data)
+        elif (self.requeteSql=="UPDATE *") :
+            # Opérations complexes : recherche d'une donnée à modifier et écriture des modificatioons
+            # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_tables_CVS)"
+            data=fcvs.readline
+            fcvs.write(nv_data)
+        else :
+            # les autres cas de requête (DELETE | DROP | GRANT | CREATE) ne seront pas implémentés pour des raisons de sécurité des données et aussi parce qu'il est plus sumple d'utiliser un tableur
+            print ("fonctionalité non implémentée")
+        
     def interrogeDataBase(self,tb_FiCvs):
         """
         typeBase,tables
@@ -58,26 +83,7 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             fcvs=open(tb_FiCvs,"r")
             # dans tous les cas le nom de la table impliquée dans la requête sera 
-            if (self.requeteSql=="SELECT *") :
-                # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
-                # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
-                requeteSql=str(self.requeteSql)
-                FROM=requeteSql.find("FROM") # index 27
-                listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
-                data=fcvs.readline
-            elif (self.requeteSql=="INSERT *") :
-                # Opérations les plus simples : ajout de nouvelles données dans le fichier
-                # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
-                nv_data=self.requeteSql()
-                fcvs.write(nv_data)
-            elif (self.requeteSql=="UPDATE *") :
-                # Opérations complexes : recherche d'une donnée à modifier et écriture des modificatioons
-                # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_tables_CVS)"
-                data=fcvs.readline
-                fcvs.write(nv_data)
-            else :
-                # les autres cas de requête (DELETE | DROP | GRANT | CREATE) ne seront pas implémentés pour des raisons de sécurité des données et aussi parce qu'il est plus sumple d'utiliser un tableur
-                print ("fonctionalité non implémentée")
+            NoSQL(tb_FiCvs)
             fcvs.close
         else :
             # self.typeBase == "postgresql"
@@ -224,11 +230,25 @@ class AppBDgestEnvoiLivres :
         """
         self.interrogeDataBase("tb_livre")
     
-    def envoiLivre(self):
+    def envoiLivre(self,titre,SEP):
         """
         Pour les envois, il faut pouvoir choisir le titre qui nous intéresse et avoir la liste de tous les envois à faire.
         * fichier CVS "envois_liste_espace+188.csv"
         * table des envois
+        
+        # CREATE TABLE "Librairie".tb_envoi_livres
+        # (
+        #    tb_livres_fk "char"[] NOT NULL,
+        #    "tb_contact-fk" "char"[] NOT NULL,
+        #    date_envoi date,
+        #    num_liv_contact_pk integer NOT NULL,
+        #    CONSTRAINT tb_envoi_livres_pkey PRIMARY KEY (num_liv_contact_pk),
+        #    CONSTRAINT tb_envoi_livres_tb_contact_fkey FOREIGN KEY ("tb_contact-fk")
+        #        REFERENCES "Librairie".tb_contacts ("Nom_contact") MATCH SIMPLE
+        #        ON UPDATE NO ACTION
+        #       ON DELETE NO ACTION
+        # )
+        
         Titre = self.nomCherche
         Pour les envois, il faudrait que par défaut ça mette tous les envois à faire (peu importe le livre). 
         Et en options avancées, choisir le titre du livre, cocher la case envoi individuel ou groupé (grâce au champs d'envoi).
@@ -261,9 +281,30 @@ class AppBDgestEnvoiLivres :
 	recherche par titre dans la liste d’envoi	
                1		si « seul »	liste sous forme : livre(s), structure et/ou contact, adresse, CP, ville, pays (plus facile pour impression et publipostage)
 	       2		 Si  « groupé »	
-        """   
-        self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "tb_envoi" WHERE "tb_envoi"."Titre" MATCHES '+self.nomCherche
+         pour les envois de presse il faut mettre un argumentaire papier avec le livre.
+        """ 
+        
+        # Vérification de l'existance du livre dans la table des livres
+        self.requeteSql='SELECT "Titre" FROM "Librairie".tb_livre WHERE tb_livre.Titre MATCHES '+Titre+';'
+        if (self.interrogeDataBase("tb_livre") === False) :
+            # Le titre n'existe pas dans la tablle des livres, il doit être ajouté
+            self.requeteSql='INSERT INTO "Librairie".tb_livre (Titre) Value ('+Titre+');'
+            self.interrogeDataBase("tb_livre")
+        
+        # Vérification de l'existance du contact dans la table des contacts
+        self.requeteSql='SELECT "SEP" FROM "Librairie".tb_contact WHERE tb_contact.Nom_contact MATCHES '+SEP+';'
+        if (self.interrogeDataBase("tb_livre") === False) :
+            # Le contact n'existe pas dans la tablle des contacts il doit être ajouté à la table
+            ajoutContacts(SEP,structure,Adresse_perso,Tel,E-mail)
+            
+        # Définir le numéro d'envoi qui doit être unique dans la table, on recherche le maxi et on l'incrémente
+        self.requeteSql='SELECT MAX "num_liv_contact_pk" FROM  "Librairie".tb_envoi AS maxNumEnvoi;'
+        maxNumEnvoi=self.interrogeDataBase("tb_envoi")
+        num_liv_contact_pk = maxNumEnvoi + 1
+        self.requeteSql='INSERT INTO "Librairie".tb_envoi (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');'
         self.interrogeDataBase("tb_envoi")
+        # self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "Librairie".tb_envoi WHERE tb_envoi.Titre MATCHES '+self.nomCherche+';'
+        # self.interrogeDataBase("tb_envoi")
         
 def test_AppBDgestEnvoiLivres (casUtilisation):
     """
