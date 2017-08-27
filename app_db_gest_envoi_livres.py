@@ -9,7 +9,7 @@ Created on Mon Aug 14 23:07:17 2017
 """
 Application de base de données pour la gestion des envois de livres gratuits
 
-Pour les structures (librairies, centre culturel, journaux ...), il faudrait les infos générales (nom, adresse, tel, mail, représentant, groupement), le type de structure (lib, presse, gsc ou blog), un contact associé et pour chaque livre si un SP a été envoyé et quand (booléen pour l’envoi + champ avec « char » pour la date/"inconnu" si ça a été envoyé mais on sait plus quand). Certaines librairies ont un envoi systématique (all ou par genre).
+Pour les structures (librairies, centre culturel, journaux ...), il faut les infos générales (nom, adresse, tel, mail, représentant, groupement), le type de structure (lib, presse, gsc ou blog), un contact associé et pour chaque livre si un SP a été envoyé et quand (booléen pour l’envoi + champ avec « char » pour la date/"inconnu" si ça a été envoyé mais on sait plus quand). Certaines librairies ont un envoi systématique (all ou par genre).
 
 Pour les contacts (responsables de librairie, blogueurs ...), il faut le même genre d’informations générales que pour les structures avec toutes les structures auxquelles ils sont associés. Il faut que ça soit lié pour que ça change automatiquement si il y a un changement d’emploi. Il faut pouvoir choisir le contact plutôt que la structure pour l’envoi pour pouvoir avoir l’adresse perso sur la liste d’envoi. Et il faut faire en sorte que ça ne fasse pas de doublons entre les contacts et les structures lors des envois.
 
@@ -35,6 +35,8 @@ class AppBDgestEnvoiLivres :
     * ajout livre
     * ajout contact
     * ajout structure
+    
+    L'application peut soit utiliser une base de données Postgres, soit des fichiers de tableur au format .cvs
     """
     
     def __init__ (self,nomCherche,utilisateur,option="envoi",typeBase="CVS") :
@@ -49,6 +51,10 @@ class AppBDgestEnvoiLivres :
         self.utilisateur=utilisateur
         self.u_secret=getpass.getpass()         
         self.requeteSql=""
+        
+    def errDB(Message):
+        print(Message)
+        exit
         
     def NoSQL(self,FiCvs) :
         """
@@ -87,10 +93,16 @@ class AppBDgestEnvoiLivres :
             fcvs.close
         else :
             # self.typeBase == "postgresql"
-            pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
-            curseur=pgConnect.cursor()
-            curseur.execute(self.requeteSql)
-            reponses = curseur.fetchall()
+            try :
+                pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
+            except :
+                errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
+            try :
+                curseur=pgConnect.cursor()
+                curseur.execute(self.requeteSql)
+                reponses = curseur.fetchall()
+            except :
+                errDB("curseur=pgConnect.cursor"+self.requeteSql)
         return (reponses)
     
     def recherche(self,typeRecherche):
@@ -115,21 +127,6 @@ class AppBDgestEnvoiLivres :
         self.requeteSql=format("SELECT Nom_contact FROM "+tb_Recherche+"WHERE Nom_contact MATCHES "+self.nomCherche)
         self.interrogeDataBase(tb_Recherche)
     
-#    def rechercheStructures(self):
-#        """
-#        * fichier CVS "dbStructures.cvs"
-#            Nom,Contact,Adresse,Code Postal,Ville,Tel,Adresse
-#        * table des structures dans la base de données Postgres
-#        SELECT nom_structure 
-#            FROM table_structure 
-#            WHERE nom_contact MATCHES nomCherche
-#        """
-#        if (self.typeBase == "CVS"):
-#            tb_structures="dbStructures.cvs"
-#        else :  
-#            tb_structures="tb_structures"
- #       self.interrogeDataBase("tb_structures")
-    
     def rechercheLivre(self):
         """
         Recherche un ou plusieurs livres dans la base de données
@@ -138,11 +135,12 @@ class AppBDgestEnvoiLivres :
             tb_livre=input("Nom fichier CVS ?")
         else : 
             tb_livre="tb_livres"
-        self.requeteSql=format("SELECT Titre_livre FROM "+tb_livre+"WHERE Nom_contact MATCHES "+self.nomCherche)  
+        self.requeteSql=format("SELECT * FROM "+tb_livre+"WHERE Titre_livre MATCHES "+self.nomCherche)  
         self.interrogeDataBase(tb_livre)
     
-    def ajoutContacts(self,Nom_contact,structure,Adresse_perso,Tel,E-mail):
+    def ajoutContacts(self,listeInfoContact):
         """
+        listeInfoContact=(Nom_contact,structure,Adresse_perso,Tel,eMail,autresStructures):
         * fichier CVS "dbContacts.cvs"
         * table des contacts dans la base de données Postgres
             ========
@@ -150,7 +148,9 @@ class AppBDgestEnvoiLivres :
             structure : clé étrangère
             Adresse perso	
             Tel
-            E-mail	
+            E-mail
+            -- rajout du champ autresStructures pour gérer les apparetenances multiples d'un contact, ce champ contiendra une liste de structures
+            
             ========
         SELECT nom_contact 
             FROM table_contacts 
@@ -165,12 +165,13 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             tb_contacts="tbContacts.cvs"
         else : 
-            tb_contacts="tb_contacts"
-        self.requeteSql=format('INSERT INTO "Librairie".'+ tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,E-mail) VALUES ('+Nom_contact+','+structure+',Adresse_perso+',',Tel+',',E-mail');'
-        self.interrogeDataBase(tb_contacts)
+            tb_contacts='"Librairie".tb_contacts'
+        self.requeteSql=format('INSERT INTO '+tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,E-mail,autresStructures) VALUES ('+listeInfoContact[0]+','+listeInfoContact[1]+','+listeInfoContact[2]+','+listeInfoContact[3]+','+listeInfoContact[4]+','+listeInfoContact[5]+');')
+        resInsert=self.interrogeDataBase(tb_contacts)
     
-    def ajoutStructures(self,Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys):
+    def ajoutStructures(self,listeInfoStructure):
         """
+        listeInfoStructure=(Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys):
         * fichier CVS "dbStructures.cvs"
         * table des structures dans la base de données Postgres
             ==============
@@ -205,14 +206,15 @@ class AppBDgestEnvoiLivres :
         """
         
         if (self.typeBase == "CVS"):
-            tb_contacts="tb_structures.cvs"
+            tb_structures="tb_structures.cvs"
         else : 
-            tb_structures="tb_structures"
-        self.requeteSql=format('INSERT INTO "Librairie".'+tb_structures+' (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) VALUES ('+Nom_librairie+','+Adresse_lib+','+cp_ville+','+Tel_lib+','+e-mail+','+Repre+','+Groupement+','+Remarque+','+typ_entreprise+','+envoi_sys+');'  
+            tb_structures='"Librairie".tb_structures'
+        self.requeteSql=format('INSERT INTO '+tb_structures+' (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,eMail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) VALUES  ('+listeInfoStructure[0]+','+listeInfoStructure[1]+','+listeInfoStructure[2]+','+listeInfoStructure[3]+','+listeInfoStructure[4]+','+listeInfoStructure[5]+','+listeInfoStructure[6]+','+listeInfoStructure[7]+','+listeInfoStructure[8]+','+listeInfoStructure[9]+');')
         self.interrogeDataBase(tb_structures)
     
-    def ajoutLivre(self):
+    def ajoutLivre(self,listeInfoLivre):
         """
+        listeInfoLivre=(titreLivre,genre,SP)
         Création d'un livre	
             1		le titre s'affiche directement dans le champ correspondant de l'interface (la partie SP des fiches ou tu parles d’un autre champ?)	
             2		Une ligne consacrée aux envois de SP du titre apparaît dans toutes les fiches structures et contact.	
@@ -228,9 +230,22 @@ class AppBDgestEnvoiLivres :
      
         Recherche un ou plusieurs livres dans la base de données
         """
-        self.interrogeDataBase("tb_livre")
-    
-    def envoiLivre(self,titre,SEP):
+        
+        if (self.typeBase == "CVS"):
+            tb_livre="tb_livre.cvs"
+            tb_structures="tb_structures.cvs"
+            tb_contacts="tbContacts.cvs"
+        else : 
+            tb_livre='"Librairie".tb_livre'
+            tb_structures='"Librairie".tb_structures'
+            tb_contacts='"Librairie".tb_contacts'
+            
+        self.requeteSql=format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
+        self.interrogeDataBase("tb_livre")    
+        # self.requeteSql=format('UPDATE '+tb_structures+' SET   SP 
+        # self.requeteSql=format('UPDATE '+tb_contacts+' SET 
+        
+    def envoiLivre(self,titre,SP):
         """
         Pour les envois, il faut pouvoir choisir le titre qui nous intéresse et avoir la liste de tous les envois à faire.
         * fichier CVS "envois_liste_espace+188.csv"
@@ -285,17 +300,19 @@ class AppBDgestEnvoiLivres :
         """ 
         
         # Vérification de l'existance du livre dans la table des livres
-        self.requeteSql='SELECT "Titre" FROM "Librairie".tb_livre WHERE tb_livre.Titre MATCHES '+Titre+';'
-        if (self.interrogeDataBase("tb_livre") === False) :
+        self.requeteSql='SELECT "Titre" FROM "Librairie".tb_livre WHERE tb_livre.Titre MATCHES '+titre+';'
+        if (self.interrogeDataBase("tb_livre") == False) :
             # Le titre n'existe pas dans la tablle des livres, il doit être ajouté
-            self.requeteSql='INSERT INTO "Librairie".tb_livre (Titre) Value ('+Titre+');'
+            self.requeteSql='INSERT INTO "Librairie".tb_livre (Titre) Value ('+titre+');'
             self.interrogeDataBase("tb_livre")
         
         # Vérification de l'existance du contact dans la table des contacts
-        self.requeteSql='SELECT "SEP" FROM "Librairie".tb_contact WHERE tb_contact.Nom_contact MATCHES '+SEP+';'
-        if (self.interrogeDataBase("tb_livre") === False) :
+        tb_contact='"Librairie".tb_contact'
+        self.requeteSql='SELECT "Nom_contact" FROM "Librairie".tb_contact WHERE tb_contact.Nom_contact MATCHES '+SP+';'
+        if (self.interrogeDataBase(tb_contact) == False) :
             # Le contact n'existe pas dans la tablle des contacts il doit être ajouté à la table
-            ajoutContacts(SEP,structure,Adresse_perso,Tel,E-mail)
+            listeInfoContact=(SP,structure,Adresse_perso,Tel,eMail)
+            self.ajoutContacts(listeInfoContact)
             
         # Définir le numéro d'envoi qui doit être unique dans la table, on recherche le maxi et on l'incrémente
         self.requeteSql='SELECT MAX "num_liv_contact_pk" FROM  "Librairie".tb_envoi AS maxNumEnvoi;'
@@ -309,64 +326,16 @@ class AppBDgestEnvoiLivres :
 def test_AppBDgestEnvoiLivres (casUtilisation):
     """
     Gestion des livres	
-        Création d'un livre	
-            1		le titre s'affiche directement dans le champ correspondant de l'interface (la partie SP des fiches ou tu parles d’un autre champ?)	
-            2		Une ligne consacrée aux envois de SP du titre apparaît dans toutes les fiches structures et contact.	
-            le titre s'affiche automatiquement dans la partie SP des fiches avec toutes les informations nécessaires (SP, destinataire, date)
-	    1		Le SP du destinataire  s'affiche directement dans le champ correspondant de l'interface (le contact s'affiche automatiquement selon la fiche attribuée au SP) 	
-	    2		Une liste d’envoi du livre se crée automatiquement dans la table « envoi »	
-	    3	condition	Les fiche cochée « envoi systématique : all»	
-	    4		 apparait directement dans la liste d’envoi du livre	
-                liste d’envoi du titre comportant tous les destinataires et leurs adresses (à la création, seulement les systématiques normalement)
-	    5	condition	fiche cochée « envoi systématique » par genre	
-	    6		apparait directement dans la liste d’envoi du livre pour un genre identique	
-                liste d’envoi du titre comportant tous les destinataires et leurs adresses (à la création, seulement les systématiques normalement)
-     Gestion des envois	
-           une fiche est cochée pour l'envoi d'un livre	
-           1	la case SP d’un titre est cochée sans date d’envoi	
-           2	l'envoi est enregistré à l'adresse de la fiche ? (préciser la signification) 	
-	   3		La structure ou personne rejoint directement la liste d’envoi du titre	liste d’envoi du titre comportant tous les destinataires et leurs adresses
-	   4		La structure ou personne est automatiquement notée comme « destinataire » de l’envoi dans ses fiches associées	
-	   5		ça note automatiquement l'envoi sur les fiches associées pour éviter les doublons 	
-           un seul envoi pour toutes les fiches associées
-	   1		La structure ou personne est automatiquement notée comme « destinataire » de l’envoi dans ses fiches associées	
-	   2		L’adresse notée sur la liste d’envoi est celle de la fiche cochée 	
-	   je coche la fiche "lib. A" qui est associée avec "contact A" qui est lui-même associé avec "blog A"	
-           1		seule "lib. A" apparait dans la liste d'envois	
-	   2		 sur la fiche de "contact A" le livre soit noté envoyé à "lib. A". 	
-	   3		 sur la fiche de "blog A" le livre soit noté envoyé à "lib. A". 	
-	   Date d’envoi remplie	
-               1	boucle	pour tous les autres titres en SP cochés	
-	       2		le livre à envoyer est intégré dans la liste d’envoi des titres seuls	
-	       3		fin de la liste des titres en SP cochés	le livre est intégré dans la liste d’envoi des titres seuls pour tous les SP cochés
-	  Date d’envoi non remplie	
-               1	boucle	pour 	
-	       2	condition	au moins un autre titre en SP coché	
-	       3	condition	tous les livres dont la case SP est cochée 	
-	       4	et	 le champ d’envoi vide sont intégrés dans la liste des envois groupés	
-               titre du livre et destinataire affichés, SP coché, date saisie ou « UNKNOWN »
-	recherche par titre dans la liste d’envoi	
-               1		si « seul »	liste sous forme : livre(s), structure et/ou contact, adresse, CP, ville, pays (plus facile pour impression et publipostage)
-	       2		 Si  « groupé »	
-    Gestion des structure		
-        1		faire un système de libellés pour faciliter les recherches.	
-	2		recherche par mot-clé, CP, ville ou pays	
-	3		pouvoir rechercher par type de structure (librairie, GSC, presse, blog)	 
-        Dans cette liste de résultats, seuls les noms des entreprises, les villes et les pays sont nécessaires
-	1		lier les fiches associées pour pouvoir y accéder en passant de l’une à l’autre	en étant sur la fiche structure et en cliquant sur un contact je dois pouvoir aller sur la fiche contact correspondante + si changement d’emploi, changement automatique
-	1		permettre l'association d'un même contact avec plusieurs structures	
-        un seul envoi pour toutes les fiches associées
-    Gestion des  contacts 		
-        1		faire un système de libellés pour faciliter les recherches	. 
-        Dans cette liste de résultats, seuls les noms des contacts, les villes et les pays sont nécessaires
-	2		permettre l'association de plusieurs contact avec une structure	un seul envoi pour toutes les fiches associées, contact 1 par défaut
-	3		permettre l'association d'un même contact avec plusieurs structures	
-        lier les fiches associées pour pouvoir y accéder en passant de l’une à l’autre
+        Création d'un livre
+        Gestion des envois	
+        Gestion des structure
+        Gestion des  contacts 
     """
     # casUtilisation.ajoutLivre()
     casUtilisation.ajoutStructure("Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all")    
     casUtilisation.ajoutContact("JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
-    casUtilisation.envoiLivre()
+    casUtilisation.ajoutLivre()
+    casUtilisation.envoiLivre("Mon livre","JL Laborde")
     
 if __name__=="__main__" :
     Utilisateur=input("Nom utilisateur ?")

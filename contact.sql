@@ -1,8 +1,8 @@
 CREATE TABLE "Librairie".tb_contacts
 (
     "Nom_contact" "char"[] NOT NULL,
-    " structure" "char"[],
-    " Adresse_perso" "char"[],
+    "structure" "char"[],
+    "Adresse_perso" "char"[],
     cp_villes "char"[],
     telef "char"[],
     email inet,
@@ -16,6 +16,9 @@ WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
+
+ALTER TABLE "Librairie".tb_contacts
+    ADD "autresStructures" "char"[]
 
 ALTER TABLE "Librairie".tb_contacts
     OWNER to postgres;
