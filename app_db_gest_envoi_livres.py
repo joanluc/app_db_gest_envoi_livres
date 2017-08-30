@@ -56,7 +56,7 @@ class AppBDgestEnvoiLivres :
         print(Message)
         exit
         
-    def NoSQL(self,FiCvs) :
+    def NoSQL(self,fcvs) :
         """
         Interpréter les requêtes SQL dans un environnement de fichiers CSV
         """
@@ -89,20 +89,20 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             fcvs=open(tb_FiCvs,"r")
             # dans tous les cas le nom de la table impliquée dans la requête sera 
-            NoSQL(tb_FiCvs)
+            self.NoSQL(fcvs)
             fcvs.close
         else :
             # self.typeBase == "postgresql"
             try :
                 pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
             except :
-                errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
+                self.errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
             try :
                 curseur=pgConnect.cursor()
                 curseur.execute(self.requeteSql)
                 reponses = curseur.fetchall()
             except :
-                errDB("curseur=pgConnect.cursor"+self.requeteSql)
+               self.errDB("curseur=pgConnect.cursor"+self.requeteSql)
         return (reponses)
     
     def recherche(self,typeRecherche):
