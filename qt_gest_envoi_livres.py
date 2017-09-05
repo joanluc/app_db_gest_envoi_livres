@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_gest_envoi_livres.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created by: PyQt4 UI code generator 4.12
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,11 +25,11 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(800, 692)
+        MainWindow.resize(586, 692)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gestEnvoi = QtGui.QTabWidget(self.centralwidget)
-        self.gestEnvoi.setGeometry(QtCore.QRect(18, -1, 561, 601))
+        self.gestEnvoi.setGeometry(QtCore.QRect(10, 0, 561, 601))
         self.gestEnvoi.setObjectName(_fromUtf8("gestEnvoi"))
         self.Entreprises = QtGui.QWidget()
         self.Entreprises.setObjectName(_fromUtf8("Entreprises"))
@@ -109,7 +109,7 @@ class Ui_MainWindow(object):
         self.frame.setFrameShadow(QtGui.QFrame.Raised)
         self.frame.setObjectName(_fromUtf8("frame"))
         self.frame_3 = QtGui.QFrame(self.groupBox)
-        self.frame_3.setGeometry(QtCore.QRect(10, 450, 501, 81))
+        self.frame_3.setGeometry(QtCore.QRect(10, 460, 501, 71))
         self.frame_3.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
         self.frame_3.setObjectName(_fromUtf8("frame_3"))
@@ -265,9 +265,15 @@ class Ui_MainWindow(object):
         self.label_24.setGeometry(QtCore.QRect(10, 10, 101, 21))
         self.label_24.setObjectName(_fromUtf8("label_24"))
         self.gestEnvoi.addTab(self.tab, _fromUtf8(""))
+        self.abandon = QtGui.QPushButton(self.centralwidget)
+        self.abandon.setGeometry(QtCore.QRect(490, 620, 80, 22))
+        self.abandon.setObjectName(_fromUtf8("abandon"))
+        self.valide = QtGui.QPushButton(self.centralwidget)
+        self.valide.setGeometry(QtCore.QRect(390, 620, 80, 22))
+        self.valide.setObjectName(_fromUtf8("valide"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 586, 19))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
@@ -275,7 +281,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.gestEnvoi.setCurrentIndex(2)
+        self.gestEnvoi.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -319,4 +325,6 @@ class Ui_MainWindow(object):
         self.gestEnvoi.setTabText(self.gestEnvoi.indexOf(self.tab_2), _translate("MainWindow", "Tab 2", None))
         self.label_24.setText(_translate("MainWindow", "Envoi de livre", None))
         self.gestEnvoi.setTabText(self.gestEnvoi.indexOf(self.tab), _translate("MainWindow", "Page", None))
+        self.abandon.setText(_translate("MainWindow", "Abandon", None))
+        self.valide.setText(_translate("MainWindow", "Valider", None))
 

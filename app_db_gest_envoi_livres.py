@@ -92,17 +92,19 @@ class AppBDgestEnvoiLivres :
             self.NoSQL(fcvs)
             fcvs.close
         else :
-            # self.typeBase == "postgresql"
-            try :
-                pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
-            except :
-                self.errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
-            try :
-                curseur=pgConnect.cursor()
-                curseur.execute(self.requeteSql)
-                reponses = curseur.fetchall()
-            except :
-               self.errDB("curseur=pgConnect.cursor"+self.requeteSql)
+            if (self.typeBase == "postgresql"):
+                try :
+                    pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
+                except :
+                    self.errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
+                try :
+                    curseur=pgConnect.cursor()
+                    curseur.execute(self.requeteSql)
+                    reponses = curseur.fetchall()
+                except :
+                    self.errDB("curseur=pgConnect.cursor"+self.requeteSql)
+            else :
+                errDB("Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée")
         return (reponses)
     
     def recherche(self,typeRecherche):
@@ -138,7 +140,7 @@ class AppBDgestEnvoiLivres :
         self.requeteSql=format("SELECT * FROM "+tb_livre+"WHERE Titre_livre MATCHES "+self.nomCherche)  
         self.interrogeDataBase(tb_livre)
     
-    def ajoutContacts(self,listeInfoContact):
+    def ajoutContact(self,listeInfoContact):
         """
         listeInfoContact=(Nom_contact,structure,Adresse_perso,Tel,eMail,autresStructures):
         * fichier CVS "dbContacts.cvs"
@@ -169,7 +171,7 @@ class AppBDgestEnvoiLivres :
         self.requeteSql=format('INSERT INTO '+tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,E-mail,autresStructures) VALUES ('+listeInfoContact[0]+','+listeInfoContact[1]+','+listeInfoContact[2]+','+listeInfoContact[3]+','+listeInfoContact[4]+','+listeInfoContact[5]+');')
         resInsert=self.interrogeDataBase(tb_contacts)
     
-    def ajoutStructures(self,listeInfoStructure):
+    def ajoutStructure(self,listeInfoStructure):
         """
         listeInfoStructure=(Nom_librairie,Adresse_lib,cp_ville,Tel_lib,e-mail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys):
         * fichier CVS "dbStructures.cvs"
@@ -323,7 +325,7 @@ class AppBDgestEnvoiLivres :
         # self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "Librairie".tb_envoi WHERE tb_envoi.Titre MATCHES '+self.nomCherche+';'
         # self.interrogeDataBase("tb_envoi")
         
-def test_AppBDgestEnvoiLivres (casUtilisation):
+def test_AppBDgestEnvoiLivres (envoi=AppBDgestEnvoiLivres):
     """
     Gestion des livres	
         Création d'un livre
@@ -332,10 +334,10 @@ def test_AppBDgestEnvoiLivres (casUtilisation):
         Gestion des  contacts 
     """
     # casUtilisation.ajoutLivre()
-    casUtilisation.ajoutStructure("Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all")    
-    casUtilisation.ajoutContact("JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
-    casUtilisation.ajoutLivre()
-    casUtilisation.envoiLivre("Mon livre","JL Laborde")
+    envoi.ajoutStructure(["Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all"])    
+    envoi.ajoutContact("JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
+    envoi.ajoutLivre("Mon livre","JL Laborde")
+    envoi.envoiLivre("Mon livre","JL Laborde")
     
 if __name__=="__main__" :
     Utilisateur=input("Nom utilisateur ?")
