@@ -1,11 +1,11 @@
 CREATE TABLE "Librairie".tb_envoi_livres
 (
     tb_livres_fk "char"[] NOT NULL,
-    "tb_contact-fk" "char"[] NOT NULL,
+    "tb_contact_fk" "char"[] NOT NULL,
     date_envoi date,
     num_liv_contact_pk integer NOT NULL,
     CONSTRAINT tb_envoi_livres_pkey PRIMARY KEY (num_liv_contact_pk),
-    CONSTRAINT tb_envoi_livres_tb_contact_fkey FOREIGN KEY ("tb_contact-fk")
+    CONSTRAINT tb_envoi_livres_tb_contact_fkey FOREIGN KEY ("tb_contact_fk")
         REFERENCES "Librairie".tb_contacts ("Nom_contact") MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION

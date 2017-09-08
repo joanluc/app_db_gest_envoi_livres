@@ -1,0 +1,7 @@
+Dictionnaire des données,,
+terme,signification,caractéristiques
+Blog,,type de structure
+GSC,grande surface culturelle,type de structure
+Contact,personne référente d'une structure,"Nom, adresse privée, téléphone, email, structures associées, envois systématiques"
+Structure,"Entreprise cliente : librairie, grande surface culturelle ; organisme de presse, blog","Nom, adresse, téléphone, email, contacts  associés, type de structure, envois systématiques"
+SP,service de presse (livre envoyé gratuitement pour la promotion),

@@ -4,7 +4,7 @@ CREATE TABLE "Librairie".tb_librairie_presse
     "Adresse_lib" "char"[],
     cp_ville "char"[],
     "Tel_lib" "char"[],
-    "e-mail" inet[],
+    "email" "char"[] -- ,inet[],
     "Repré" "char"[],
     "Groupement" "char"[],
     "Remarque" text COLLATE pg_catalog."default",

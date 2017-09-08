@@ -51,6 +51,7 @@ class AppBDgestEnvoiLivres :
         self.utilisateur=utilisateur
         self.u_secret=getpass.getpass()         
         self.requeteSql=""
+        print(format([self.typeBase,self.utilisateur,self.nomCherche,self.option]))
         
     def errDB(Message):
         print(Message)
@@ -67,6 +68,7 @@ class AppBDgestEnvoiLivres :
             FROM=requeteSql.find("FROM") # index 27
             listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
             data=fcvs.readline
+            return(data)
         elif (self.requeteSql=="INSERT *") :
             # Opérations les plus simples : ajout de nouvelles données dans le fichier
             # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
@@ -89,23 +91,30 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             fcvs=open(tb_FiCvs,"r")
             # dans tous les cas le nom de la table impliquée dans la requête sera 
-            self.NoSQL(fcvs)
+            reponses=self.NoSQL(fcvs)
             fcvs.close
         else :
             if (self.typeBase == "postgresql"):
                 try :
                     pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
                 except :
-                    self.errDB(format('pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'))
+                    Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
+                    self.errDB(Message)
                 try :
                     curseur=pgConnect.cursor()
                     curseur.execute(self.requeteSql)
                     reponses = curseur.fetchall()
+                    return (reponses)
                 except :
-                    self.errDB("curseur=pgConnect.cursor"+self.requeteSql)
+                    # Message='curseur=pgConnect.cursor;curseur.execute(self.requeteSql)'
+                    # print(Message)
+                    # self.errDB(Message)
+                    print('Erreur : curseur=pgConnect.cursor() \
+                           curseur.execute(self.requeteSql) \
+                           reponses = curseur.fetchall()')
             else :
-                errDB("Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée")
-        return (reponses)
+                Message="Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée"
+                self.errDB(Message)
     
     def recherche(self,typeRecherche):
         """
@@ -168,7 +177,7 @@ class AppBDgestEnvoiLivres :
             tb_contacts="tbContacts.cvs"
         else : 
             tb_contacts='"Librairie".tb_contacts'
-        self.requeteSql=format('INSERT INTO '+tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,E-mail,autresStructures) VALUES ('+listeInfoContact[0]+','+listeInfoContact[1]+','+listeInfoContact[2]+','+listeInfoContact[3]+','+listeInfoContact[4]+','+listeInfoContact[5]+');')
+        self.requeteSql=format('INSERT INTO '+tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,eMail,autresStructures) VALUES ('+listeInfoContact[0]+','+listeInfoContact[1]+','+listeInfoContact[2]+','+listeInfoContact[3]+','+listeInfoContact[4]+','+listeInfoContact[5]+');')
         resInsert=self.interrogeDataBase(tb_contacts)
     
     def ajoutStructure(self,listeInfoStructure):
@@ -208,7 +217,7 @@ class AppBDgestEnvoiLivres :
         """
         
         if (self.typeBase == "CVS"):
-            tb_structures="tb_structures.cvs"
+            tb_structures="cvsdata/tb_structures.cvs"
         else : 
             tb_structures='"Librairie".tb_structures'
         self.requeteSql=format('INSERT INTO '+tb_structures+' (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,eMail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) VALUES  ('+listeInfoStructure[0]+','+listeInfoStructure[1]+','+listeInfoStructure[2]+','+listeInfoStructure[3]+','+listeInfoStructure[4]+','+listeInfoStructure[5]+','+listeInfoStructure[6]+','+listeInfoStructure[7]+','+listeInfoStructure[8]+','+listeInfoStructure[9]+');')
@@ -335,11 +344,19 @@ def test_AppBDgestEnvoiLivres (envoi=AppBDgestEnvoiLivres):
     """
     # casUtilisation.ajoutLivre()
     envoi.ajoutStructure(["Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all"])    
-    envoi.ajoutContact("JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr")
-    envoi.ajoutLivre("Mon livre","JL Laborde")
-    envoi.envoiLivre("Mon livre","JL Laborde")
+    envoi.ajoutContact(["JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr",""])
+    envoi.ajoutLivre(ceLivre,"JL Laborde")
+    envoi.envoiLivre(ceLivre,"JL Laborde")
+    
+def responsa(Question):
+    maResponsa=None
+    while (maResponsa==None):
+        maResponsa=input(format(Question))
+    return(maResponsa)
     
 if __name__=="__main__" :
-    Utilisateur=input("Nom utilisateur ?")
-    nouvEnvoiLivre = AppBDgestEnvoiLivres("monLivre",Utilisateur)
+    ceLivre=responsa("Recherche ? (nom livre / structure / contact")
+    option=responsa("Option ? (ajout, recherche / envoi (défaut)")
+    Utilisateur=responsa("Nom utilisateur ?")
+    nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"postgresql")
     test_AppBDgestEnvoiLivres (nouvEnvoiLivre)
