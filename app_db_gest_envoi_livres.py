@@ -98,8 +98,11 @@ class AppBDgestEnvoiLivres :
                 try :
                     pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
                 except :
-                    Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
-                    self.errDB(Message)
+                    # Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
+                    # self.errDB(Message)
+                    print('pgConnect = psycopg2.connect(database="Librairie", \
+                                                        user=self.utilisateur, \
+                                                        password=self.u_secret')
                 try :
                     curseur=pgConnect.cursor()
                     curseur.execute(self.requeteSql)
@@ -113,8 +116,10 @@ class AppBDgestEnvoiLivres :
                            curseur.execute(self.requeteSql) \
                            reponses = curseur.fetchall()')
             else :
-                Message="Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée"
-                self.errDB(Message)
+                # Message="Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée"
+                # self.errDB(Message)
+                print("Usage : \
+                      AppBDgestEnvoiLivres nomCherche, utilisateur, option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée")
     
     def recherche(self,typeRecherche):
         """
@@ -251,6 +256,9 @@ class AppBDgestEnvoiLivres :
             tb_structures='"Librairie".tb_structures'
             tb_contacts='"Librairie".tb_contacts'
             
+        print (format(listeInfoLivre[0]))
+        print (format(listeInfoLivre[1]))
+        print (format(listeInfoLivre[2]))
         self.requeteSql=format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
         self.interrogeDataBase("tb_livre")    
         # self.requeteSql=format('UPDATE '+tb_structures+' SET   SP 
@@ -334,6 +342,13 @@ class AppBDgestEnvoiLivres :
         # self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "Librairie".tb_envoi WHERE tb_envoi.Titre MATCHES '+self.nomCherche+';'
         # self.interrogeDataBase("tb_envoi")
         
+    
+def responsa(Question):
+    maResponsa=None
+    while (maResponsa==None):
+        maResponsa=input(format(Question))
+    return(maResponsa)
+    
 def test_AppBDgestEnvoiLivres (envoi=AppBDgestEnvoiLivres):
     """
     Gestion des livres	
@@ -345,18 +360,25 @@ def test_AppBDgestEnvoiLivres (envoi=AppBDgestEnvoiLivres):
     # casUtilisation.ajoutLivre()
     envoi.ajoutStructure(["Ma librairie" ,"" ,"33000" ,"0556876543" ,"" ,"" ,"Aquitaine" ,"" ,"" ,"all"])    
     envoi.ajoutContact(["JL Laborde","oc+linux","6,allée des lapins, 33125 Hostens","06-22-46-51-25","joanluc.laborda@free.fr",""])
-    envoi.ajoutLivre(ceLivre,"JL Laborde")
-    envoi.envoiLivre(ceLivre,"JL Laborde")
-    
-def responsa(Question):
-    maResponsa=None
-    while (maResponsa==None):
-        maResponsa=input(format(Question))
-    return(maResponsa)
+    # listeInfoLivre=(titreLivre,genre,SP)
+    genre=responsa("Quel est le genre de "+ceLivre+" ?\n")
+    SP=responsa(ceLivre+" doit-il être envoyé au service de presse ? \n")
+    if (SP=="o|O") :
+        SP=True
+    else :
+        SP=False
+    envoi.ajoutLivre([ceLivre,genre,SP])
+    envoi.envoiLivre([ceLivre,"JL Laborde"])
     
 if __name__=="__main__" :
-    ceLivre=responsa("Recherche ? (nom livre / structure / contact")
-    option=responsa("Option ? (ajout, recherche / envoi (défaut)")
-    Utilisateur=responsa("Nom utilisateur ?")
+    ceLivre=responsa("Titre du livre ? \n")
+    Utilisateur=responsa("Nom utilisateur ? \n")
+    option=responsa("Option ? (ajout, recherche, envoi (défaut) \n")
+    if (option=="a*") :
+        option="ajout"
+    elif (option=="r*") :
+        option="recherche"
+    else :
+        option="envoi"
     nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"postgresql")
     test_AppBDgestEnvoiLivres (nouvEnvoiLivre)
