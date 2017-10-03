@@ -39,7 +39,7 @@ class AppBDgestEnvoiLivres :
     L'application peut soit utiliser une base de données Postgres, soit des fichiers de tableur au format .cvs
     """
     
-    def __init__ (self,nomCherche,utilisateur,option="envoi",typeBase="CVS") :
+    def __init__ (self,nomCherche,utilisateur,u_secret="",option="envoi",typeBase="CVS",dbSrv="localhost",dbnam="Librairie") :
 #     def __init__ (self,nomCherche,utilisateur,option="envoi") :
         """
         Constructeur
@@ -49,8 +49,11 @@ class AppBDgestEnvoiLivres :
         self.nomCherche=nomCherche
         self.option=option
         self.utilisateur=utilisateur
-        self.u_secret=getpass.getpass()         
+        if (u_secret==""):
+            self.u_secret=getpass.getpass()         
         self.requeteSql=""
+        self.dbSrv=dbSrv
+        self.dbnam=dbnam
         print(format([self.typeBase,self.utilisateur,self.nomCherche,self.option]))
         
     def errDB(Message):
@@ -96,7 +99,7 @@ class AppBDgestEnvoiLivres :
         else :
             if (self.typeBase == "postgresql"):
                 try :
-                    pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)
+                    pgConnect = psycopg2.connect(database=self.dbnam, user=self.utilisateur, password=self.u_secret)
                 except :
                     # Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
                     # self.errDB(Message)
@@ -249,18 +252,24 @@ class AppBDgestEnvoiLivres :
         
         if (self.typeBase == "CVS"):
             tb_livre="tb_livre.cvs"
-            tb_structures="tb_structures.cvs"
-            tb_contacts="tbContacts.cvs"
+            tb_envoi="tb_envoi.cvs"
+            # tb_structures="tb_structures.cvs"
+            # tb_contacts="tbContacts.cvs"
         else : 
             tb_livre='"Librairie".tb_livre'
-            tb_structures='"Librairie".tb_structures'
-            tb_contacts='"Librairie".tb_contacts'
+            tb_envoi='"Librairie"tb_envoi.cvs'
+            # tb_structures='"Librairie".tb_structures'
+            # tb_contacts='"Librairie".tb_contacts'
             
         print (format(listeInfoLivre[0]))
         print (format(listeInfoLivre[1]))
         print (format(listeInfoLivre[2]))
         self.requeteSql=format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
-        self.interrogeDataBase("tb_livre")    
+        self.interrogeDataBase("tb_livre")
+        if (listeInfoLivre[2]==True) : 
+            # SP est vrai, on doit écrire des infos dans tb_enboi
+            self.requeteSql=format('INSERT INTO '+tb_envoi+' (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');')
+            self.interrogeDataBase("tb_envoi")
         # self.requeteSql=format('UPDATE '+tb_structures+' SET   SP 
         # self.requeteSql=format('UPDATE '+tb_contacts+' SET 
         
