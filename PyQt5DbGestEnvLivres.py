@@ -11,6 +11,7 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, QLabel, QAction, QLineEdit, QMessageBox, QRadioButton
 from PyQt5.QtGui import QIcon,QPixmap,QPainter
 from PyQt5.QtCore import pyqtSlot,QRect
+import AppBDgestEnvoiLivres
  
 class PyQt5DbGestEnvLivres(QMainWindow):
  
@@ -35,26 +36,67 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         
         actContact = QAction(QIcon('contact.png'), 'Contact', self)
         actContact.setShortcut('Ctrl+C')
-        actContact.setStatusTip('Contact application')
-        actContact.triggered.connect(self.ongletContact)
+        actContact.setStatusTip('Formulaire contact')
+        actContact.triggered.connect(self.Contact)
+        
         actEntreprise = QAction(QIcon('entreprise.png'), 'Entreprise', self)
         actEntreprise.setShortcut('Ctrl+E')
-        actEntreprise.setStatusTip('Entreprise application')
-        actEntreprise.triggered.connect(self.ongletEntreprise)
+        actEntreprise.setStatusTip('Formulaire entreprise')
+        actEntreprise.triggered.connect(self.Entreprise)
+        
+        actLivre = QAction(QIcon('livre.png'), 'Livre', self)
+        actLivre.setShortcut('Ctrl+L')
+        actLivre.setStatusTip('Formulaire livre')
+        actLivre.triggered.connect(self.Livre)
+        
+        # Menu Fichier Create new action
+        newAct = QAction(QIcon('new.png'), '&New', self)        
+        newAct.setShortcut('Ctrl+N')
+        newAct.setStatusTip('Nouveau fichier CVS')
+        newAct.triggered.connect(self.newCall)
+        openAct = QAction(QIcon('open.png'), '&Open', self)        
+        openAct.setShortcut('Ctrl+O')
+        openAct.setStatusTip('Ouvre fichier CVS')
+        openAct.triggered.connect(self.openCall)        
         exitAct = QAction(QIcon('exit24.png'), 'Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(self.close)
+        Aide = QAction(QIcon('aide.png'), '&aide', self)        
+        Aide.setShortcut('Ctrl+A')
+        Aide.setStatusTip('Aide')
+        Aide.triggered.connect(self.Aide)        
+        Preferences = QAction(QIcon('pref.png'), '&Prefs', self)        
+        Preferences.setShortcut('Ctrl+P')
+        Preferences.setStatusTip('Preferences')
+        Preferences.triggered.connect(self.Preferences)        
+        Apropos = QAction(QIcon('about.png'), '&aBout', self)        
+        Apropos.setShortcut('Ctrl+B')
+        Apropos.setStatusTip('Apropos')
+        Apropos.triggered.connect(self.about)        
 
+        # Menu Fichier 
         menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&Fichier')
+        fileMenu.addAction(newAct)
+        fileMenu.addAction(openAct)
+        fileMenu.addAction(exitAct)
+        fileMenu = menubar.addMenu('&Aide')
+        fileMenu.addAction(Aide)
+        fileMenu.addAction(Preferences)
+        fileMenu.addAction(Apropos)
         fileMenu = menubar.addMenu('&Contact')
         fileMenu.addAction(actContact)
         fileMenu = menubar.addMenu('&Entreprise')
         fileMenu.addAction(actEntreprise)
+        fileMenu = menubar.addMenu('&Livre')
+        fileMenu.addAction(actLivre)
+        
 
         toolbar = self.addToolBar('Exit')
         toolbar.addAction(exitAct)
-        
+        toolbar.addAction(actContact)
+        toolbar.addAction(actEntreprise)
         # self.ongletEntreprise()   
         
         self.bValide = QPushButton('Valider', self)
@@ -89,6 +131,51 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         # self.nomBouton.setGeometry(QRect(dimBt[0], dimBt[1], dimBt[2], dimBt[3]))
         # self.nomBouton.setObjectName(nomBouton)
                 
+        
+    def Aide():
+        print("Aide") 
+    def Preferences():
+        print("Preferences") 
+    def about():
+        print("A propos")  
+        print(self.__doc__)
+        print(AppBDgestEnvoiLivres.__doc__)
+    def newCall():
+        print("Nouveau fichier CVS")
+    def openCall():
+        print("Ouvre fichier CVS")
+        
+    def Contact():
+        monContact=self.ongletContact()
+        envoiMonContact=AppBDgestEnvoiLivres(monContact)
+    def Entreprise():
+        monEntr=self.ongletEntreprise()
+        envoiMonEntr=AppBDgestEnvoiLivres(monEntr)
+    def Livre():
+        monLivre=self.ongletLivre()
+        envoiMonLivre=AppBDgestEnvoiLivres(monLivre)
+        
+    def ongletLivre(self):
+        """
+        Formulaire de saisie des infos par livre
+        """
+        self.titreLabel = QLabel('Titre livre', self)        
+        self.titreLabel.move(50,50)
+        self.titreTxBox = QLineEdit(self)
+        self.titreTxBox.move(200, 50)
+        titre=self.titreTxBox.text()
+        self.auteurLabel = QLabel('Auteur', self)        
+        self.auteurLabel.move(50,50)
+        self.auteurTxBox = QLineEdit(self)
+        self.auteurTxBox.move(200, 50)
+        auteur=self.auteurTxBox.text()
+        self.genreLabel = QLabel('Genre', self)        
+        self.genreLabel.move(50,50)
+        self.genreTxBox = QLineEdit(self)
+        self.genreTxBox.move(200, 50)
+        genre=self.genreTxBox.text()
+        
+        return([titre,auteur,genre])
         
     def ongletContact(self):
         """
@@ -128,6 +215,8 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         self.emelTxBox.move(200, 150)
         # self.emelTxBox.resize(220,150)
         emel=self.emelTxBox.text()
+        
+        return([nomP,adrP,cpVi,telf,emel])
         
     def ongletEntreprise(self):
         """
