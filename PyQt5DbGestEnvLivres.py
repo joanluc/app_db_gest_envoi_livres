@@ -7,8 +7,11 @@ Created on Wed Sep 27 21:52:50 2017
 PyQt5DbGestEnvLivres.py
 """
 
+# Exemples PyQt -> https://pythonprogramminglanguage.com/pyqt-menu/
+
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, QLabel, QAction, QLineEdit, QMessageBox, QRadioButton
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, \
+QLabel, QAction, QLineEdit, QMessageBox, QDialog, QRadioButton, QMdiArea, QMdiSubWindow
 from PyQt5.QtGui import QIcon,QPixmap,QPainter
 from PyQt5.QtCore import pyqtSlot,QRect
 import AppBDgestEnvoiLivres
@@ -37,17 +40,17 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         actContact = QAction(QIcon('contact.png'), 'Contact', self)
         actContact.setShortcut('Ctrl+C')
         actContact.setStatusTip('Formulaire contact')
-        actContact.triggered.connect(self.Contact)
+        actContact.triggered.connect(self.ongletContact)
         
         actEntreprise = QAction(QIcon('entreprise.png'), 'Entreprise', self)
         actEntreprise.setShortcut('Ctrl+E')
         actEntreprise.setStatusTip('Formulaire entreprise')
-        actEntreprise.triggered.connect(self.Entreprise)
+        actEntreprise.triggered.connect(self.ongletEntreprise)
         
         actLivre = QAction(QIcon('livre.png'), 'Livre', self)
         actLivre.setShortcut('Ctrl+L')
         actLivre.setStatusTip('Formulaire livre')
-        actLivre.triggered.connect(self.Livre)
+        actLivre.triggered.connect(self.ongletLivre)
         
         # Menu Fichier Create new action
         newAct = QAction(QIcon('new.png'), '&New', self)        
@@ -85,13 +88,14 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         fileMenu.addAction(Aide)
         fileMenu.addAction(Preferences)
         fileMenu.addAction(Apropos)
+        
         fileMenu = menubar.addMenu('&Contact')
         fileMenu.addAction(actContact)
         fileMenu = menubar.addMenu('&Entreprise')
         fileMenu.addAction(actEntreprise)
         fileMenu = menubar.addMenu('&Livre')
         fileMenu.addAction(actLivre)
-        
+        # fileMenu.triggered[QAction].connect(self)  #  windowaction PyQT4
 
         toolbar = self.addToolBar('Exit')
         toolbar.addAction(exitAct)
@@ -130,28 +134,39 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         # self.nomBouton.setGeometry(QtCore.QRect(dimBt[0], dimBt[1], dimBt[2], dimBt[3]))
         # self.nomBouton.setGeometry(QRect(dimBt[0], dimBt[1], dimBt[2], dimBt[3]))
         # self.nomBouton.setObjectName(nomBouton)
-                
+
+
+    def error(self,Message):
+        dialog = QMessageBox()
+        dialog.setText(Message)
+        dret=dialog.exec()                
         
-    def Aide():
-        print("Aide") 
-    def Preferences():
-        print("Preferences") 
-    def about():
-        print("A propos")  
-        print(self.__doc__)
-        print(AppBDgestEnvoiLivres.__doc__)
-    def newCall():
-        print("Nouveau fichier CVS")
-    def openCall():
-        print("Ouvre fichier CVS")
+    def Aide(self):
+        self.error("Aide : fonction pas encore implémentée")
         
-    def Contact():
+    def Preferences(self):
+        self.error("Preferences : fonction pas encore implémentée")
+        
+    def about(self):
+        self.error("A propos")
+        self.errort(self.__doc__)
+        self.error(AppBDgestEnvoiLivres.__doc__)
+        
+    def newCall(self):
+        self.error("Nouveau fichier CVS")
+        
+    def openCall(self):
+        self.error("Ouvre fichier CVS")
+        
+        
+    def Contact(self):
         monContact=self.ongletContact()
         envoiMonContact=AppBDgestEnvoiLivres(monContact)
-    def Entreprise():
+        
+    def Entreprise(self):
         monEntr=self.ongletEntreprise()
         envoiMonEntr=AppBDgestEnvoiLivres(monEntr)
-    def Livre():
+    def Livre(self):
         monLivre=self.ongletLivre()
         envoiMonLivre=AppBDgestEnvoiLivres(monLivre)
         
@@ -159,21 +174,30 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         """
         Formulaire de saisie des infos par livre
         """
-        self.titreLabel = QLabel('Titre livre', self)        
-        self.titreLabel.move(50,50)
-        self.titreTxBox = QLineEdit(self)
-        self.titreTxBox.move(200, 50)
-        titre=self.titreTxBox.text()
-        self.auteurLabel = QLabel('Auteur', self)        
-        self.auteurLabel.move(50,50)
-        self.auteurTxBox = QLineEdit(self)
-        self.auteurTxBox.move(200, 50)
-        auteur=self.auteurTxBox.text()
-        self.genreLabel = QLabel('Genre', self)        
-        self.genreLabel.move(50,50)
-        self.genreTxBox = QLineEdit(self)
-        self.genreTxBox.move(200, 50)
-        genre=self.genreTxBox.text()
+        # print(self.ongletLivre.__doc__)     
+        self.mdi = QMdiArea()
+        self.setCentralWidget(self.mdi)   
+        diaLivre = QMdiSubWindow()
+        diaLivre.setWindowTitle(self.ongletLivre.__doc__)
+        diaLivre.titreLabel = QLabel('Titre livre', diaLivre)        
+        diaLivre.titreLabel.move(50,50)
+        diaLivre.titreTxBox = QLineEdit(diaLivre)
+        diaLivre.titreTxBox.move(200, 50)
+        titre=diaLivre.titreTxBox.text()
+        diaLivre.auteurLabel = QLabel('Auteur', diaLivre)        
+        diaLivre.auteurLabel.move(50,75)
+        diaLivre.auteurTxBox = QLineEdit(diaLivre)
+        diaLivre.auteurTxBox.move(200, 75)
+        auteur=diaLivre.auteurTxBox.text()
+        diaLivre.genreLabel = QLabel('Genre', diaLivre)        
+        diaLivre.genreLabel.move(50,100)
+        diaLivre.genreTxBox = QLineEdit(diaLivre)
+        diaLivre.genreTxBox.move(200, 100)
+        genre=diaLivre.genreTxBox.text()
+        
+        # print(self.ongletLivre.__module__)
+        self.mdi.addSubWindow(diaLivre)
+        diaLivre.show()   
         
         return([titre,auteur,genre])
         
@@ -181,6 +205,7 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         """
         Formulaire de saisie des infos par contact
         """
+        print(self.ongletContact.__doc__)
         # =self.labelTextbox('Raison sociale',50)
         self.nomPLabel = QLabel('Nom prénom', self)        
         self.nomPLabel.move(50,50)
@@ -215,6 +240,9 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         self.emelTxBox.move(200, 150)
         # self.emelTxBox.resize(220,150)
         emel=self.emelTxBox.text()
+        print(self.ongletContact.__module__)
+        
+        self.show()
         
         return([nomP,adrP,cpVi,telf,emel])
         
@@ -222,6 +250,7 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         """
         Formulaire de saisie des infos par entreprise
         """
+        print(self.ongletEntreprise.__doc__)
         # =self.labelTextbox('Raison sociale',50)
         self.rSocLabel = QLabel('Raison sociale', self)        
         self.rSocLabel.move(50,50)
@@ -286,19 +315,20 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         # self.bRadioGenre.setGeometry(QRect(260, 240, 71, 20))
         self.bRadioGenre.setObjectName("bRadioGenre")
         
-        return([rSoc,adrP,cpVi,telf,emel,rpst,grpm])
+        self.show()
+        print(self.ongletEntreprise.__module__)
         
-    def error(self,Message):
-        self.statusBar().showMessage(Message)
+        return([rSoc,adrP,cpVi,telf,emel,rpst,grpm])
         
     @pyqtSlot()
     def accept(self):
-        print('Validation '+format(self.ongletEntreprise))
-        # self.error('PyQt5 button click validé'+format(self))
+        # print('Validation '+format(self.ongletEntreprise))
+        self.error('PyQt5 button click validé'+format(self))
+        
     @pyqtSlot()
     def reject(self):
-        print('Abandon '+format(self))
-        # self.error('PyQt5 button click validé'+format(self))
+        # print('Abandon '+format(self))
+        self.error('PyQt5 button click validé'+format(self))
         
  
 if __name__ == '__main__':
