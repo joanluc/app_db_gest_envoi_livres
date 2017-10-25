@@ -18,7 +18,7 @@ import AppBDgestEnvoiLivres
  
 class PyQt5DbGestEnvLivres(QMainWindow):
  
-    def __init__(self):
+    def __init__(self,AppBDgestEnvoiLivres):
         super().__init__()
         self.title = "PyQt5 Base de données de gestion d'envoi de livres"
         self.left = 10

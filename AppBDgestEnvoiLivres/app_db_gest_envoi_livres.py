@@ -68,7 +68,23 @@ class AppBDgestEnvoiLivres :
             # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
             # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
             requeteSql=str(self.requeteSql)
-            FROM=requeteSql.find("FROM") # index 27
+            DISTINCT=requeteSql.find("DISTINCT")
+            if (FROM=requeteSql.find("FROM")):
+                """
+                SELECT listeColonnes FROM listeTables
+                """                
+                if (DISTINCT):
+                    """
+                    SELECT DISTINCT listeColonnes FROM listeTables
+                    """
+            if (WHERE=requeteSql.find("WHERE")):
+                """
+                SELECT listeColonnes WHERE Condition
+                """# index 27
+                if (AND=requeteSql.find("AND")):
+                    """
+                    SELECT listeColonnes WHERE
+                    """# index 27, OR and NOT
             listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
             data=fcvs.readline
             return(data)
