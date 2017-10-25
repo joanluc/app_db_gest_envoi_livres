@@ -87,6 +87,8 @@ class AppBDgestEnvoiLivres :
                     """# index 27, OR and NOT
             listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
             data=fcvs.readline
+            for colonne in data :
+                print (colonne)
             return(data)
         elif (self.requeteSql=="INSERT *") :
             # Opérations les plus simples : ajout de nouvelles données dans le fichier
