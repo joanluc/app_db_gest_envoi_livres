@@ -30,22 +30,25 @@ class PyQt5DbGestEnvLivres(QMainWindow):
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        #--- Affichage d'une photo de bibliothèque comme image de fond -------------
-        # self.fond = QPixmap("bibli.jpg")  
-        # redim si nécessaire à la taille de la case sans déformation
-        # wpix, hpix =  self.fond.width(), self.fond.height()
-        # afficher dans le rectagle calculé
-        # QPainter.drawPixmap(self,10, 10, self.fond) 
         
-        actContact = QAction(QIcon('contact.png'), 'Contact', self)
+        actContact = QAction(QIcon('contact.png'), 'Ajout contact', self)
         actContact.setShortcut('Ctrl+C')
         actContact.setStatusTip('Formulaire contact')
-        actContact.triggered.connect(self.ongletContact)
+        # actContact.triggered.connect(self.ongletContact)
+        actContact.triggered.connect(self.ongletContact("ajout"))
+        actContact = QAction(QIcon('contact.png'), 'Recherche contact', self)
+        actContact.setShortcut('Ctrl+C')
+        actContact.setStatusTip('Formulaire contact')
+        actContact.triggered.connect(self.ongletContact("recherche"))
         
-        actEntreprise = QAction(QIcon('entreprise.png'), 'Entreprise', self)
+        actEntreprise = QAction(QIcon('entreprise.png'), 'Ajout entreprise', self)
         actEntreprise.setShortcut('Ctrl+E')
         actEntreprise.setStatusTip('Formulaire entreprise')
-        actEntreprise.triggered.connect(self.ongletEntreprise)
+        actEntreprise.triggered.connect(self.ongletEntreprise("ajout"))
+        actEntreprise = QAction(QIcon('entreprise.png'), 'Recherche entreprise', self)
+        actEntreprise.setShortcut('Ctrl+E')
+        actEntreprise.setStatusTip('Formulaire entreprise')
+        actEntreprise.triggered.connect(self.ongletEntreprise("recherche"))
         
         actLivre = QAction(QIcon('livre.png'), 'Livre', self)
         actLivre.setShortcut('Ctrl+L')
@@ -53,27 +56,27 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         actLivre.triggered.connect(self.ongletLivre)
         
         # Menu Fichier Create new action
-        newAct = QAction(QIcon('new.png'), '&New', self)        
+        newAct = QAction(QIcon('img/new.png'), '&New', self)        
         newAct.setShortcut('Ctrl+N')
         newAct.setStatusTip('Nouveau fichier CVS')
         newAct.triggered.connect(self.newCall)
-        openAct = QAction(QIcon('open.png'), '&Open', self)        
+        openAct = QAction(QIcon('img/open.png'), '&Open', self)        
         openAct.setShortcut('Ctrl+O')
         openAct.setStatusTip('Ouvre fichier CVS')
         openAct.triggered.connect(self.openCall)        
-        exitAct = QAction(QIcon('exit24.png'), 'Exit', self)
+        exitAct = QAction(QIcon('img/exit24.png'), 'Exit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(self.close)
-        Aide = QAction(QIcon('aide.png'), '&aide', self)        
+        Aide = QAction(QIcon('img/aide.png'), '&aide', self)        
         Aide.setShortcut('Ctrl+A')
         Aide.setStatusTip('Aide')
         Aide.triggered.connect(self.Aide)        
-        Preferences = QAction(QIcon('pref.png'), '&Prefs', self)        
+        Preferences = QAction(QIcon('img/pref.png'), '&Prefs', self)        
         Preferences.setShortcut('Ctrl+P')
         Preferences.setStatusTip('Preferences')
         Preferences.triggered.connect(self.Preferences)        
-        Apropos = QAction(QIcon('about.png'), '&aBout', self)        
+        Apropos = QAction(QIcon('img/about.png'), '&aBout', self)        
         Apropos.setShortcut('Ctrl+B')
         Apropos.setStatusTip('Apropos')
         Apropos.triggered.connect(self.about)        
@@ -97,22 +100,42 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         fileMenu.addAction(actLivre)
         # fileMenu.triggered[QAction].connect(self)  #  windowaction PyQT4
 
-        toolbar = self.addToolBar('Exit')
-        toolbar.addAction(exitAct)
+        toolbar = self.addToolBar('Livre')
+        toolbar.addAction(actLivre)
         toolbar.addAction(actContact)
         toolbar.addAction(actEntreprise)
-        # self.ongletEntreprise()   
+        toolbar.addAction(exitAct)
+        # self.ongletEntreprise()    
+               
+        #--- Affichage d'une photo de bibliothèque comme image de fond
+        self.fond = QPixmap("img/bibli.jpg")
+        # redim si nécessaire à la taille de la case sans déformation
+        wpix, hpix =  self.fond.width(), self.fond.height()
+        # afficher dans le rectagle calculé 
+        # QPainter.drawPixmap (self, QRect targetRect, QPixmap pixmap, QRect sourceRect)
+        bibli=QPainter()
+        bibli.begin(self.fond)
+        bibli.drawPixmap(wpix,hpix,self.fond) 
+        bibli.end
         
-        self.bValide = QPushButton('Valider', self)
-        self.bValide.setToolTip('Valider la saisie')
-        self.bValide.move(400,450) 
-        self.bValide.clicked.connect(self.accept)
-        # self.bValide.clicked.connect(self.on_click)
+        #### Test QLabel
+        # self.titreLabel = QLabel('Test', self)        
+        # self.titreLabel.move(50,50)
+        # self.titreTxBox = QLineEdit(self)
+        # self.titreTxBox.move(200, 50)
+        # testLabel=format(self.titreTxBox.text())
         
-        self.bCancel = QPushButton('Abandon', self)
-        self.bCancel.setToolTip('Abandonner la saisie')
-        self.bCancel.move(500,450) 
-        self.bCancel.clicked.connect(self.reject)
+        # self.bValide = QPushButton('Valider', self)
+        # self.bValide.setToolTip('Valider la saisie')
+        # self.bValide.move(400,450) 
+        # if (self.bValide.clicked.connect(self.accept)) :
+            # print(testLabel)
+        # # self.bValide.clicked.connect(self.on_click)
+        # self.error(testLabel)
+        # self.bCancel = QPushButton('Abandon', self)
+        # self.bCancel.setToolTip('Abandonner la saisie')
+        # self.bCancel.move(500,450) 
+        # self.bCancel.clicked.connect(self.reject)
         
         self.show()
         
@@ -133,13 +156,12 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         # self.nomBouton = QRadioButton(self)
         # self.nomBouton.setGeometry(QtCore.QRect(dimBt[0], dimBt[1], dimBt[2], dimBt[3]))
         # self.nomBouton.setGeometry(QRect(dimBt[0], dimBt[1], dimBt[2], dimBt[3]))
-        # self.nomBouton.setObjectName(nomBouton)
-
-
+        # self.nomBouton.setObjectName(nomBouton)     
+        
     def error(self,Message):
         dialog = QMessageBox()
         dialog.setText(Message)
-        dret=dialog.exec()                
+        dret=dialog.exec()           
         
     def Aide(self):
         self.error("Aide : fonction pas encore implémentée")
@@ -170,14 +192,20 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         monLivre=self.ongletLivre()
         envoiMonLivre=AppBDgestEnvoiLivres(monLivre)
         
-    def ongletLivre(self):
+    def ongletLivre(self,option):
         """
         Formulaire de saisie des infos par livre
         """
         # print(self.ongletLivre.__doc__)     
         self.mdi = QMdiArea()
-        self.setCentralWidget(self.mdi)   
+        self.setCentralWidget(self.mdi)
         diaLivre = QMdiSubWindow()
+        
+        diaLivre.left = 10
+        diaLivre.top = 10
+        diaLivre.width = 500
+        diaLivre.height = 200   
+        
         diaLivre.setWindowTitle(self.ongletLivre.__doc__)
         diaLivre.titreLabel = QLabel('Titre livre', diaLivre)        
         diaLivre.titreLabel.move(50,50)
@@ -194,129 +222,205 @@ class PyQt5DbGestEnvLivres(QMainWindow):
         diaLivre.genreTxBox = QLineEdit(diaLivre)
         diaLivre.genreTxBox.move(200, 100)
         genre=diaLivre.genreTxBox.text()
+            
         
-        # print(self.ongletLivre.__module__)
+        diaLivre.bValide = QPushButton('Valider', diaLivre)
+        diaLivre.bValide.setToolTip('Valider la saisie')
+        diaLivre.bValide.move(300,150) 
+        diaLivre.bValide.clicked.connect(self.accept)
+        # self.bValide.clicked.connect(self.on_click)
+        
+        diaLivre.bCancel = QPushButton('Abandon', diaLivre)
+        diaLivre.bCancel.setToolTip('Abandonner la saisie')
+        diaLivre.bCancel.move(400,150) 
+        diaLivre.bCancel.clicked.connect(self.reject)
+        
         self.mdi.addSubWindow(diaLivre)
-        diaLivre.show()   
+        diaLivre.show()
         
+        print("Titre : "+titre+" ,auteur : "+auteur+" ,genre : "+genre)
+        # AppBDgestEnvoiLivres.ajoutLivre([titre,auteur,genre])
+        if (option == "ajout"):
+            AppBDgestEnvoiLivres.ajoutLivre([titre,auteur,genre])
+        elif (option == "recherche"):
+            AppBDgestEnvoiLivres.rechercheLivre()
         return([titre,auteur,genre])
         
-    def ongletContact(self):
+    def ongletContact(self,option):
         """
         Formulaire de saisie des infos par contact
         """
-        print(self.ongletContact.__doc__)
-        # =self.labelTextbox('Raison sociale',50)
-        self.nomPLabel = QLabel('Nom prénom', self)        
-        self.nomPLabel.move(50,50)
-        self.nomPTxBox = QLineEdit(self)
-        self.nomPTxBox.move(200, 50)
-        # self.rSocTxBox.resize(220,50)
-        nomP=self.nomPTxBox.text()# adrP=self.labelTextbox('Adresse personelle',75)  
-        self.adrPLabel = QLabel('Adresse personelle', self)       
-        self.adrPLabel.move(50,75)
-        self.adrPTxBox = QLineEdit(self)
-        self.adrPTxBox.move(200, 75)
-        # self.adrPTxBox.resize(220,75)
-        adrP=self.adrPTxBox.text()
-        # cpVi=self.labelTextbox('Code postal - Ville',100) 
-        self.cpViLabel = QLabel('Code postal - Ville', self)       
-        self.cpViLabel.move(50,100)
-        self.cpViTxBox = QLineEdit(self)
-        self.cpViTxBox.move(200, 100)
-        # self.cpViTxBox.resize(220,100)
-        cpVi=self.cpViTxBox.text()
-        # telf=self.labelTextbox('Téléphone',125) 
-        self.telfLabel = QLabel('Téléphone', self)       
-        self.telfLabel.move(50,125)
-        self.telfTxBox = QLineEdit(self)
-        self.telfTxBox.move(200, 125)
-        # self.telfTxBox.resize(220,125)
-        telf=self.telfTxBox.text()
-        # emel=self.labelTextbox('email',150) 
-        self.emelLabel = QLabel('email', self)       
-        self.emelLabel.move(50,150)
-        self.emelTxBox = QLineEdit(self)
-        self.emelTxBox.move(200, 150)
-        # self.emelTxBox.resize(220,150)
-        emel=self.emelTxBox.text()
-        print(self.ongletContact.__module__)
+        # print(self.ongletContact.__doc__)
+        self.mdi = QMdiArea()
+        self.setCentralWidget(self.mdi)   
+        diaContact = QMdiSubWindow()
         
-        self.show()
+        diaContact.left = 10
+        diaContact.top = 10
+        diaContact.width = 500
+        diaContact.height = 200   
+        
+        # =self.labelTextbox('Raison sociale',50)
+        diaContact.nomPLabel = QLabel('Nom prénom', diaContact)        
+        diaContact.nomPLabel.move(50,50)
+        diaContact.nomPTxBox = QLineEdit(diaContact)
+        diaContact.nomPTxBox.move(200, 50)
+        # self.rSocTxBox.resize(220,50)
+        nomP=diaContact.nomPTxBox.text()# adrP=self.labelTextbox('Adresse personelle',75)  
+        diaContact.adrPLabel = QLabel('Adresse personelle', diaContact)       
+        diaContact.adrPLabel.move(50,75)
+        diaContact.adrPTxBox = QLineEdit(diaContact)
+        diaContact.adrPTxBox.move(200, 75)
+        # self.adrPTxBox.resize(220,75)
+        adrP=diaContact.adrPTxBox.text()
+        # cpVi=self.labelTextbox('Code postal - Ville',100) 
+        diaContact.cpViLabel = QLabel('Code postal - Ville', diaContact)       
+        diaContact.cpViLabel.move(50,100)
+        diaContact.cpViTxBox = QLineEdit(diaContact)
+        diaContact.cpViTxBox.move(200, 100)
+        # self.cpViTxBox.resize(220,100)
+        cpVi=diaContact.cpViTxBox.text()
+        # telf=self.labelTextbox('Téléphone',125) 
+        diaContact.telfLabel = QLabel('Téléphone', diaContact)       
+        diaContact.telfLabel.move(50,125)
+        diaContact.telfTxBox = QLineEdit(diaContact)
+        diaContact.telfTxBox.move(200, 125)
+        # self.telfTxBox.resize(220,125)
+        telf=diaContact.telfTxBox.text()
+        # emel=self.labelTextbox('email',150) 
+        diaContact.emelLabel = QLabel('email', diaContact)       
+        diaContact.emelLabel.move(50,150)
+        diaContact.emelTxBox = QLineEdit(diaContact)
+        diaContact.emelTxBox.move(200, 150)
+        # self.emelTxBox.resize(220,150)
+        emel=diaContact.emelTxBox.text()
+        # print(self.ongletContact.__module__)
+            
+        
+        diaContact.bValide = QPushButton('Valider', diaContact)
+        diaContact.bValide.setToolTip('Valider la saisie')
+        diaContact.bValide.move(300,200) 
+        diaContact.bValide.clicked.connect(self.accept)
+        # self.bValide.clicked.connect(self.on_click)
+        
+        diaContact.bCancel = QPushButton('Abandon', diaContact)
+        diaContact.bCancel.setToolTip('Abandonner la saisie')
+        diaContact.bCancel.move(400,200) 
+        diaContact.bCancel.clicked.connect(self.reject)
+        
+        self.mdi.addSubWindow(diaContact)
+        
+        diaContact.show()
+        if (option == "ajout"):
+            AppBDgestEnvoiLivres.ajoutContact([nomP,adrP,cpVi,telf,emel])
+        elif (option == "recherche"):
+            AppBDgestEnvoiLivres.recherche("contacts")
         
         return([nomP,adrP,cpVi,telf,emel])
         
-    def ongletEntreprise(self):
+    def ongletEntreprise(self,option):
         """
         Formulaire de saisie des infos par entreprise
         """
-        print(self.ongletEntreprise.__doc__)
+        # print(self.ongletEntreprise.__doc__)
         # =self.labelTextbox('Raison sociale',50)
-        self.rSocLabel = QLabel('Raison sociale', self)        
-        self.rSocLabel.move(50,50)
-        self.rSocTxBox = QLineEdit(self)
-        self.rSocTxBox.move(200, 50)
+        self.mdi = QMdiArea()
+        self.setCentralWidget(self.mdi)   
+        diaEntreprise = QMdiSubWindow()
+        
+        diaEntreprise.left = 10
+        diaEntreprise.top = 10
+        diaEntreprise.width = 500
+        diaEntreprise.height = 200   
+        
+        
+        diaEntreprise.rSocLabel = QLabel('Raison sociale', diaEntreprise)        
+        diaEntreprise.rSocLabel.move(50,50)
+        diaEntreprise.rSocTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.rSocTxBox.move(200, 50)
         # self.rSocTxBox.resize(220,50)
-        rSoc=self.rSocTxBox.text()
+        rSoc=diaEntreprise.rSocTxBox.text()
         # return(valorTextbox)
         # adrP=self.labelTextbox('Adresse personelle',75)  
-        self.adrPLabel = QLabel('Adresse personelle', self)       
-        self.adrPLabel.move(50,75)
-        self.adrPTxBox = QLineEdit(self)
-        self.adrPTxBox.move(200, 75)
+        diaEntreprise.adrPLabel = QLabel('Adresse personelle', diaEntreprise)       
+        diaEntreprise.adrPLabel.move(50,75)
+        diaEntreprise.adrPTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.adrPTxBox.move(200, 75)
         # self.adrPTxBox.resize(220,75)
-        adrP=self.adrPTxBox.text()
+        adrP=diaEntreprise.adrPTxBox.text()
         # cpVi=self.labelTextbox('Code postal - Ville',100) 
-        self.cpViLabel = QLabel('Code postal - Ville', self)       
-        self.cpViLabel.move(50,100)
-        self.cpViTxBox = QLineEdit(self)
-        self.cpViTxBox.move(200, 100)
+        diaEntreprise.cpViLabel = QLabel('Code postal - Ville', diaEntreprise)       
+        diaEntreprise.cpViLabel.move(50,100)
+        diaEntreprise.cpViTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.cpViTxBox.move(200, 100)
         # self.cpViTxBox.resize(220,100)
-        cpVi=self.cpViTxBox.text()
+        cpVi=diaEntreprise.cpViTxBox.text()
         # telf=self.labelTextbox('Téléphone',125) 
-        self.telfLabel = QLabel('Téléphone', self)       
-        self.telfLabel.move(50,125)
-        self.telfTxBox = QLineEdit(self)
-        self.telfTxBox.move(200, 125)
+        diaEntreprise.telfLabel = QLabel('Téléphone', diaEntreprise)       
+        diaEntreprise.telfLabel.move(50,125)
+        diaEntreprise.telfTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.telfTxBox.move(200, 125)
         # self.telfTxBox.resize(220,125)
-        telf=self.telfTxBox.text()
+        telf=diaEntreprise.telfTxBox.text()
         # emel=self.labelTextbox('email',150) 
-        self.emelLabel = QLabel('email', self)       
-        self.emelLabel.move(50,150)
-        self.emelTxBox = QLineEdit(self)
-        self.emelTxBox.move(200, 150)
+        diaEntreprise.emelLabel = QLabel('email', diaEntreprise)       
+        diaEntreprise.emelLabel.move(50,150)
+        diaEntreprise.emelTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.emelTxBox.move(200, 150)
         # self.emelTxBox.resize(220,150)
-        emel=self.emelTxBox.text()
+        emel=diaEntreprise.emelTxBox.text()
         # rpst=self.labelTextbox('représentant',175) 
-        self.rpstLabel = QLabel('représentant', self)       
-        self.rpstLabel.move(50,175)
-        self.rpstTxBox = QLineEdit(self)
-        self.rpstTxBox.move(200, 175)
+        diaEntreprise.rpstLabel = QLabel('représentant', diaEntreprise)       
+        diaEntreprise.rpstLabel.move(50,175)
+        diaEntreprise.rpstTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.rpstTxBox.move(200, 175)
         # self.rpstTxBox.resize(220,175)
-        rpst=self.rpstTxBox.text()
+        rpst=diaEntreprise.rpstTxBox.text()
         # grpm=self.labelTextbox('groupement',200) 
-        self.grpmLabel = QLabel('groupement', self)       
-        self.grpmLabel.move(50,200)
-        self.grpmTxBox = QLineEdit(self)
-        self.grpmTxBox.move(200, 200)
+        diaEntreprise.grpmLabel = QLabel('groupement', diaEntreprise)       
+        diaEntreprise.grpmLabel.move(50,200)
+        diaEntreprise.grpmTxBox = QLineEdit(diaEntreprise)
+        diaEntreprise.grpmTxBox.move(200, 200)
         # self.grpmTxBox.resize(220,200)
-        grpm=self.grpmTxBox.text()
+        grpm=diaEntreprise.grpmTxBox.text()
         
         
-        self.lRadioTout = QLabel("Tout")    
-        self.lRadioTout.move(140,240)
-        self.bRadioTout = QRadioButton()
+        diaEntreprise.lRadioTout = QLabel("Tout")    
+        diaEntreprise.lRadioTout.move(140,240)
+        diaEntreprise.bRadioTout = QRadioButton()
         # self.bRadioTout.setGeometry(QRect(190, 240, 61, 20))
-        self.bRadioTout.setObjectName("bRadioTout")
+        diaEntreprise.bRadioTout.setObjectName("bRadioTout")
         
-        self.lRadioGenre = QLabel("Genre")  
-        self.lRadioTout.move(210,240)
-        self.bRadioGenre = QRadioButton()
+        diaEntreprise.lRadioGenre = QLabel("Genre")  
+        diaEntreprise.lRadioTout.move(210,240)
+        diaEntreprise.bRadioGenre = QRadioButton()
         # self.bRadioGenre.setGeometry(QRect(260, 240, 71, 20))
-        self.bRadioGenre.setObjectName("bRadioGenre")
+        diaEntreprise.bRadioGenre.setObjectName("bRadioGenre")
+            
         
-        self.show()
-        print(self.ongletEntreprise.__module__)
+        diaEntreprise.bValide = QPushButton('Valider', diaEntreprise)
+        diaEntreprise.bValide.setToolTip('Valider la saisie')
+        diaEntreprise.bValide.move(300,450) 
+        diaEntreprise.bValide.clicked.connect(self.accept)
+        # self.bValide.clicked.connect(self.on_click)
+        
+        diaEntreprise.bCancel = QPushButton('Abandon', diaEntreprise)
+        diaEntreprise.bCancel.setToolTip('Abandonner la saisie')
+        diaEntreprise.bCancel.move(400,450) 
+        if (diaEntreprise.bCancel.clicked.connect(self.reject)) :
+            diaEntreprise.close
+        
+        self.mdi.addSubWindow(diaEntreprise)
+        
+        diaEntreprise.show()
+        
+        # AppBDgestEnvoiLivres.ajoutStructure([rSoc,adrP,cpVi,telf,emel,rpst,grpm])
+        if (option == "ajout"):
+            AppBDgestEnvoiLivres.ajoutStructure([rSoc,adrP,cpVi,telf,emel,rpst,grpm])
+        elif (option == "recherche"):
+            AppBDgestEnvoiLivres.recherche(Structure([rSoc,adrP,cpVi,telf,emel,rpst,grpm]))
+        
+        # print(self.ongletEntreprise.__module__)
         
         return([rSoc,adrP,cpVi,telf,emel,rpst,grpm])
         

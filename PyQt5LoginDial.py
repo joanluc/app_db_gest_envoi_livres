@@ -64,6 +64,9 @@ class PyQt5DbLoginDial(QWidget):
         self.show()
         
     
+    def __quit__():
+        exit
+        
     def Connecte(dataConnect):
         import AppBDgestEnvoiLivres
         nouvEnvoiLivre = AppBDgestEnvoiLivres("",dataConnect[2],dataConnect[3],"","postgresql",dataConnect[0],dataConnect[1])
