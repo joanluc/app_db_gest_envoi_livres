@@ -60,33 +60,54 @@ class AppBDgestEnvoiLivres :
         print(Message)
         exit
         
-    def NoSQL(self,fcvs) :
+    def NoSQL(self,tb_FiCvs) :
         """
         Interpréter les requêtes SQL dans un environnement de fichiers CSV
         """
+        import csv
+        with open(tb_FiCvs,"r") as fcvs :
+            data=csv.DictReader(fcvs)
+            
         if (self.requeteSql=="SELECT *") :
             # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
             # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
             requeteSql=str(self.requeteSql)
             DISTINCT=requeteSql.find("DISTINCT")
-            if (FROM=requeteSql.find("FROM")):
+            FROM=requeteSql.find("FROM")
+            WHERE=requeteSql.find("WHERE")
+            AND=requeteSql.find("AND")
+            OR=requeteSql.find("OR")
+            NOT=requeteSql.find("NOT")
+            # data=fcvs.readline
+            
+            if (FROM):
                 """
                 SELECT listeColonnes FROM listeTables
-                """                
+                    listeTables=fcvs
+                """
+                
                 if (DISTINCT):
                     """
                     SELECT DISTINCT listeColonnes FROM listeTables
                     """
-            if (WHERE=requeteSql.find("WHERE")):
-                """
-                SELECT listeColonnes WHERE Condition
-                """# index 27
-                if (AND=requeteSql.find("AND")):
+                if (WHERE):
                     """
-                    SELECT listeColonnes WHERE
-                    """# index 27, OR and NOT
-            listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
-            data=fcvs.readline
+                    SELECT listeColonnes WHERE Condition
+                    """
+                    if (AND):
+                        """
+                        SELECT listeColonnes WHERE Condition1 AND Condition2
+                        """
+                    elif (OR):
+                        """
+                        SELECT listeColonnes WHERE Condition1 OR Condition2
+                        """
+                    elif (NOT):
+                        """
+                        SELECT listeColonnes WHERE NOT Condition
+                        """
+                    # index 27, OR and NOT
+            # listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
             for colonne in data :
                 print (colonne)
             return(data)
@@ -103,6 +124,8 @@ class AppBDgestEnvoiLivres :
         else :
             # les autres cas de requête (DELETE | DROP | GRANT | CREATE) ne seront pas implémentés pour des raisons de sécurité des données et aussi parce qu'il est plus sumple d'utiliser un tableur
             print ("fonctionalité non implémentée")
+            
+        fcvs.close
         
     def interrogeDataBase(self,tb_FiCvs):
         """
@@ -110,10 +133,8 @@ class AppBDgestEnvoiLivres :
         """
         # print (self.typeBase)
         if (self.typeBase == "CVS"):
-            fcvs=open(tb_FiCvs,"r")
             # dans tous les cas le nom de la table impliquée dans la requête sera 
-            reponses=self.NoSQL(fcvs)
-            fcvs.close
+            reponses=self.NoSQL(tb_FiCvs)
         else :
             if (self.typeBase == "postgresql"):
                 try :
