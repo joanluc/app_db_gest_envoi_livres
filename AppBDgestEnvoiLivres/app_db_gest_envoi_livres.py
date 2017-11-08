@@ -64,7 +64,9 @@ class AppBDgestEnvoiLivres :
         """
         Interpréter les requêtes SQL dans un environnement de fichiers CSV
         """
-        import csv
+        import csv        
+#        import sqlparse
+#        from sqlparse.tokens import Keyword, DML
         with open(tb_FiCvs,"r") as fcvs :
             data=csv.DictReader(fcvs)
             
@@ -428,5 +430,6 @@ if __name__=="__main__" :
         option="recherche"
     else :
         option="envoi"
-    nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"postgresql")
+    # nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"postgresql")
+    nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"morgane")
     test_AppBDgestEnvoiLivres (nouvEnvoiLivre)
