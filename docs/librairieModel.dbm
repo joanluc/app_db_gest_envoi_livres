@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0-alpha1" last-position="0,18" last-zoom="1"
+<dbmodel pgmodeler-ver="0.9.0-alpha1" last-position="0,0" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <role name="Librairie">
 	<comment><![CDATA[Groupe Librairie]]></comment>
@@ -37,8 +37,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </schema>
 
 <schema name="Librairie" rect-visible="true" fill-color="#e1e1e1">
-	<role name="postgres"/>
+	<role name="joanluc"/>
 	<appended-sql><![CDATA[SELECT * FROM tb_contact;]]></appended-sql>
+	<prepended-sql><![CDATA[CREATE SCHEMA "Librairie"
+  AUTHORIZATION joanluc;
+
+GRANT ALL ON SCHEMA "Librairie" TO joanluc;
+GRANT ALL ON SCHEMA "Librairie" TO "Librairie" WITH GRANT OPTION;
+]]></prepended-sql>
 </schema>
 
 <table name="tb_contact">
@@ -47,11 +53,32 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<tablespace name="pg_default"/>
 	<comment><![CDATA[Table des contacts]]></comment>
 	<appended-sql><![CDATA[INSERT INTO table (nom_contact,structure,adresse_perso,cp_ville,telephone,email) VALUES ("joanluc","oc.linux","6 allée des lapins","33125 Hostens","0622465125","joanluc.laborda@free.fr");]]></appended-sql>
-	<position x="460" y="220"/>
+	<prepended-sql><![CDATA[
+CREATE TABLE "Librairie".tb_contact
+(
+  "nom_contact" character varying NOT NULL, 
+  "entreprise" character varying, 
+  "Adresse_perso" character varying,
+  "cp_villes" character varying,
+  "telefone" character varying,
+  "email" character varying, 
+  "nbr_autres_struct" smallint,
+  "autres_structures" character varying,
+  CONSTRAINT tb_contacts_fk FOREIGN KEY ("nom_librairie")
+      REFERENCES "Librairie".tb_librairie_presse ("nom_librairie") MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+  CONSTRAINT tb_contacts_pk UNIQUE ("nom_contact")
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "Librairie".tb_contact
+  OWNER TO joanluc;]]></prepended-sql>
+	<position x="40" y="83"/>
 	<column name="nom_contact" not-null="true">
 		<type name="character varying" length="0"/>
 	</column>
-	<column name="structure">
+	<column name="entreprise">
 		<type name="character varying" length="0"/>
 	</column>
 	<column name="adresse_perso">
@@ -66,6 +93,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="email" default-value="nom@domaine">
 		<type name="character varying" length="0"/>
 	</column>
+	<column name="nbr_autres_struct" default-value="0">
+		<type name="smallint" length="0"/>
+		<comment><![CDATA[Nombre d'autres structures où le contact est référencé]]></comment>
+	</column>
+	<column name="autres_structures">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[Une chaine de caractère par structure, les noms composés reliés par _]]></comment>
+	</column>
 	<constraint name="tb_contact_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_contact">
 		<columns names="nom_contact" ref-type="src-columns"/>
 	</constraint>
@@ -74,7 +109,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="tb_librairie_presse">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="440" y="600"/>
+	<position x="20" y="463"/>
 	<column name="nom_librairie" not-null="true">
 		<type name="character varying" length="0"/>
 	</column>
@@ -111,6 +146,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="character varying" length="0"/>
 		<comment><![CDATA[Envoi par genre]]></comment>
 	</column>
+	<column name="nbr_autres_contacts">
+		<type name="smallint" length="0"/>
+		<comment><![CDATA[Nombre d'autres contacts référencés dans l'a structure]]></comment>
+	</column>
+	<column name="autres_contrats">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[Liste des autres contacts]]></comment>
+	</column>
 	<constraint name="tb_libpresse_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_librairie_presse">
 		<columns names="nom_librairie" ref-type="src-columns"/>
 	</constraint>
@@ -119,7 +162,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="tb_livre">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="1560" y="680"/>
+	<position x="1080" y="560"/>
 	<column name="titre_livre" not-null="true">
 		<type name="character varying" length="0"/>
 	</column>
@@ -139,7 +182,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="tb_envoi_livre">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="1460" y="200"/>
+	<position x="1000" y="63"/>
 	<column name="tb_livre_fk" not-null="true">
 		<type name="character varying" length="0"/>
 	</column>
@@ -163,7 +206,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <view name="entreprise">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="980" y="620"/>
+	<position x="560" y="483"/>
 	<reference table="&quot;Librairie&quot;.tb_librairie_presse" alias="ent"/>
 	<reference table="&quot;Librairie&quot;.tb_contact" column="nom_contact" alias="contact" column-alias="nom_contact"/>
 	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
@@ -191,7 +234,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <view name="envoi">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="1420" y="480"/>
+	<position x="580" y="340"/>
 	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
 	<reference table="&quot;Librairie&quot;.tb_librairie_presse" column="nom_librairie" alias="entreprise" column-alias="raison_sociale"/>
 	<reference table="&quot;Librairie&quot;.tb_contact" column="nom_contact" alias="contact" column-alias="nom"/>
@@ -219,7 +262,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <view name="contact">
 	<schema name="&quot;Librairie&quot;"/>
 	<role name="&quot;Librairie&quot;"/>
-	<position x="1020" y="300"/>
+	<position x="600" y="163"/>
 	<reference table="&quot;Librairie&quot;.tb_contact" alias="contact"/>
 	<reference table="&quot;Librairie&quot;.tb_librairie_presse" column="nom_librairie" alias="entreprise" column-alias="raison_sociale"/>
 	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
@@ -250,7 +293,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 
 <constraint name="tb_contact_fk_tb_libp" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_librairie_presse" table="&quot;Librairie&quot;.tb_contact">
-	<columns names="structure" ref-type="src-columns"/>
+	<columns names="entreprise" ref-type="src-columns"/>
 	<columns names="nom_librairie" ref-type="dst-columns"/>
 </constraint>
 
@@ -307,5 +350,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<object name="&quot;Librairie&quot;" type="schema"/>
 	<roles names="morgane"/>
 	<privileges create="true" usage="true"/>
+</permission>
+<permission>
+	<object name="entreprise" parent="&quot;Librairie&quot;.tb_contact" type="column"/>
+	<roles names="&quot;Librairie&quot;"/>
+	<privileges select="true" insert="true" update="true" references="true"/>
+</permission>
+<permission>
+	<object name="entreprise" parent="&quot;Librairie&quot;.tb_contact" type="column"/>
+	<roles names="morgane"/>
+	<privileges select="grant-op" insert="grant-op" update="grant-op" references="grant-op"/>
 </permission>
 </dbmodel>

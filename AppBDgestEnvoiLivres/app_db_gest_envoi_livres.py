@@ -39,11 +39,14 @@ class AppBDgestEnvoiLivres :
     L'application peut soit utiliser une base de données Postgres, soit des fichiers de tableur au format .cvs
     """
     
-    def __init__ (self,nomCherche,utilisateur,u_secret="",option="envoi",typeBase="CVS",dbSrv="localhost",dbnam="Librairie") :
+    def __init__ (self,nomCherche,utilisateur,u_secret="",option="envoi",typeBase="postgresql",dbSrv="localhost",dbnam="Librairie") :
 #     def __init__ (self,nomCherche,utilisateur,option="envoi") :
         """
         Constructeur
-        option 
+        option = "ajout", "recherche", "envoi" par défaut
+        typeBase="CVS" ou "postgresql", "postgresql" par défaut
+        dbSrv="localhost"
+        dbnam="Librairie"
         """
         self.typeBase=typeBase
         self.nomCherche=nomCherche
@@ -305,7 +308,8 @@ class AppBDgestEnvoiLivres :
         print (format(listeInfoLivre[0]))
         print (format(listeInfoLivre[1]))
         print (format(listeInfoLivre[2]))
-        self.requeteSql=format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
+        print (format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+str(listeInfoLivre[2])+');'))
+        self.requeteSql=format('INSERT INTO '+tb_livre+' (titre_livre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
         self.interrogeDataBase("tb_livre")
         if (listeInfoLivre[2]==True) : 
             # SP est vrai, on doit écrire des infos dans tb_enboi
@@ -431,5 +435,5 @@ if __name__=="__main__" :
     else :
         option="envoi"
     # nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"postgresql")
-    nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option,"morgane")
+    nouvEnvoiLivre = AppBDgestEnvoiLivres(ceLivre,Utilisateur,option)
     test_AppBDgestEnvoiLivres (nouvEnvoiLivre)
