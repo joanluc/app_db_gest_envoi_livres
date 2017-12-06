@@ -5,10 +5,12 @@
 -- Model Author: ---
 
 -- object: "Librairie" | type: ROLE --
-DROP ROLE IF EXISTS "Librairie";
-CREATE ROLE "Librairie" WITH ;
+DROP OWNED BY "Maison_d_Edition",morgane CASCADE;
+-- DROP OWNED BY morgane CASCADE;
+DROP ROLE IF EXISTS "Maison_d_Edition";
+CREATE ROLE "Maison_d_Edition" WITH ;
 -- ddl-end --
-COMMENT ON ROLE "Librairie" IS 'Groupe Librairie';
+COMMENT ON ROLE "Maison_d_Edition" IS 'Groupe Editeur';
 -- ddl-end --
 
 -- object: morgane | type: ROLE --
@@ -38,9 +40,8 @@ CREATE ROLE morgane WITH
 -- Database creation must be done outside an multicommand file.
 -- These commands were put in this file only for convenience.
 -- -- object: new_database | type: DATABASE --
--- -- DROP DATABASE IF EXISTS new_database;
--- CREATE DATABASE new_database
--- ;
+-- DROP DATABASE IF EXISTS "Librairie";
+-- CREATE DATABASE "Librairie";
 -- -- ddl-end --
 -- 
 
@@ -52,7 +53,7 @@ CREATE SCHEMA "Librairie"
   AUTHORIZATION morgane; -- joanluc;
 
  -- GRANT ALL ON SCHEMA "Librairie" TO joanluc;
-GRANT ALL ON SCHEMA "Librairie" TO "Librairie" WITH GRANT OPTION;
+GRANT ALL ON SCHEMA "Librairie" TO "Maison_d_Edition" WITH GRANT OPTION;
 
 -- ddl-end --
 
@@ -87,25 +88,10 @@ CREATE TABLE "Librairie".tb_contact
 )
 WITH (
   OIDS=FALSE
-)
-TABLESPACE pg_default;
+);
+-- TABLESPACE pg_default;
 -- ALTER TABLE "Librairie".tb_contact
 --   OWNER TO joanluc;
--- ddl-end --
-
- -- CREATE TABLE "Librairie".tb_contact(
- -- 	nom_contact character varying NOT NULL,
- -- 	entreprise character varying,
- -- 	adresse_perso character varying,
- -- 	cp_ville character varying,
- -- 	telefone character varying,
- -- 	email character varying DEFAULT nom@domaine,
- -- 	nbr_autres_struct smallint DEFAULT 0,
- -- 	autres_structures character varying,
- -- 	CONSTRAINT tb_contact_pk PRIMARY KEY (nom_contact)
-
- -- )
- -- TABLESPACE pg_default;
 -- ddl-end --
 COMMENT ON TABLE "Librairie".tb_contact IS 'Table des contacts';
 -- ddl-end --
@@ -121,13 +107,13 @@ ALTER TABLE "Librairie".tb_contact OWNER TO postgres;
 -- ddl-end --
 
 -- object: "Librairie".tb_librairie_presse | type: TABLE --
--- DROP TABLE IF EXISTS "Librairie".tb_librairie_presse CASCADE;
+DROP TABLE IF EXISTS "Librairie".tb_librairie_presse CASCADE;
 CREATE TABLE "Librairie".tb_librairie_presse(
 	nom_librairie character varying NOT NULL,
 	adresse_librairie character varying,
 	cp_ville character varying,
 	tel_lib_presse character varying(13),
-	email character varying DEFAULT nom@domaine,
+	email character varying DEFAULT 'nom@domaine',
 	representant character varying,
 	groupement character varying,
 	remarque text,
@@ -137,8 +123,7 @@ CREATE TABLE "Librairie".tb_librairie_presse(
 	nbr_autres_contacts smallint,
 	autres_contrats character varying,
 	CONSTRAINT tb_libpresse_pk PRIMARY KEY (nom_librairie)
-
-);
+	);
 -- ddl-end --
 COMMENT ON COLUMN "Librairie".tb_librairie_presse.type_entreprise IS 'Librairie / Presse / Centre culturel';
 -- ddl-end --
@@ -177,7 +162,7 @@ ALTER TABLE "Librairie".tb_livre OWNER TO "Librairie";
 -- ddl-end --
 
 -- object: "Librairie".tb_envoi_livre | type: TABLE --
--- DROP TABLE IF EXISTS "Librairie".tb_envoi_livre CASCADE;
+DROP TABLE IF EXISTS "Librairie".tb_envoi_livre CASCADE;
 CREATE TABLE "Librairie".tb_envoi_livre(
 	tb_livre_fk character varying NOT NULL,
 	tb_contact_fk character varying NOT NULL,
@@ -197,7 +182,7 @@ ALTER TABLE "Librairie".tb_envoi_livre OWNER TO "Librairie";
 -- ddl-end --
 
 -- object: "Librairie".entreprise | type: VIEW --
--- DROP VIEW IF EXISTS "Librairie".entreprise CASCADE;
+DROP VIEW IF EXISTS "Librairie".entreprise CASCADE;
 CREATE VIEW "Librairie".entreprise
 AS 
 
@@ -209,15 +194,13 @@ SELECT
    livre.sp AS sp
 FROM
    "Librairie".tb_contact AS contact,
-   "Librairie".tb_livre AS livre,
-   "Librairie".tb_livre AS livre,
    "Librairie".tb_livre AS livre;
 -- ddl-end --
-ALTER VIEW "Librairie".entreprise OWNER TO "Librairie";
+ALTER VIEW "Librairie".entreprise OWNER TO "Maison_d_Edition";
 -- ddl-end --
 
 -- object: "Librairie".envoi | type: VIEW --
--- DROP VIEW IF EXISTS "Librairie".envoi CASCADE;
+DROP VIEW IF EXISTS "Librairie".envoi CASCADE;
 CREATE VIEW "Librairie".envoi
 AS 
 
@@ -230,15 +213,13 @@ SELECT
 FROM
    "Librairie".tb_livre AS livre,
    "Librairie".tb_librairie_presse AS entreprise,
-   "Librairie".tb_contact AS contact,
-   "Librairie".tb_contact AS contact,
    "Librairie".tb_contact AS contact;
 -- ddl-end --
-ALTER VIEW "Librairie".envoi OWNER TO "Librairie";
+ALTER VIEW "Librairie".envoi OWNER TO "Maison_d_Edition";
 -- ddl-end --
 
 -- object: "Librairie".contact | type: VIEW --
--- DROP VIEW IF EXISTS "Librairie".contact CASCADE;
+DROP VIEW IF EXISTS "Librairie".contact CASCADE;
 CREATE VIEW "Librairie".contact
 AS 
 
@@ -253,7 +234,7 @@ FROM
    "Librairie".tb_livre AS livre,
    "Librairie".tb_envoi_livre AS envoi;
 -- ddl-end --
-ALTER VIEW "Librairie".contact OWNER TO "Librairie";
+ALTER VIEW "Librairie".contact OWNER TO "Maison_d_Edition";
 -- ddl-end --
 
 -- object: tb_contact_fk_tb_libp | type: CONSTRAINT --
@@ -294,7 +275,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- object: grant_1a01b96a74 | type: PERMISSION --
 GRANT USAGE
    ON SCHEMA "Librairie"
-   TO "Librairie" WITH GRANT OPTION;
+   TO "Maison_d_Edition" WITH GRANT OPTION;
 -- ddl-end --
 
 -- object: grant_c7082dee9d | type: PERMISSION --
@@ -306,7 +287,7 @@ GRANT CREATE,USAGE
 -- object: grant_ac639af3da | type: PERMISSION --
 GRANT SELECT,INSERT,UPDATE,REFERENCES
   (entreprise) ON TABLE "Librairie".tb_contact
-   TO "Librairie";
+   TO "Maison_d_Edition";
 -- ddl-end --
 
 -- object: grant_29b5969ef7 | type: PERMISSION --
