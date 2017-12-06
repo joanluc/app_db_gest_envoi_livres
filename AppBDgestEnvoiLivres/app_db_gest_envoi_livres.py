@@ -371,6 +371,8 @@ class AppBDgestEnvoiLivres :
 	       2		 Si  « groupé »	
          pour les envois de presse il faut mettre un argumentaire papier avec le livre.
         """ 
+        tb_livres_fk,tb_contact_fk,date_envoi=None,None,None  # Clés étrangères et index date pour insert dans tb_envoi
+        SP,structure,Adresse_perso,Tel,eMail=None,None,None,None
         
         # Vérification de l'existance du livre dans la table des livres
         self.requeteSql='SELECT "Titre" FROM "Librairie".tb_livre WHERE tb_livre.Titre MATCHES '+titre+';'
