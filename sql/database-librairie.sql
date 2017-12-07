@@ -138,10 +138,10 @@ COMMENT ON COLUMN "Librairie".tb_librairie_presse.autres_contrats IS 'Liste des 
 ALTER TABLE "Librairie".tb_librairie_presse OWNER TO "Librairie";
 -- ddl-end --
 
--- Rajout contrainte clé étrangère sur tb_contact
+-- Rajout contrainte clé étrangère sur tb_contact -- ERREUR:  la colonne « nom_librairie » référencée dans la contrainte de clé étrangère n'existe pas
 ALTER TABLE "Librairie".tb_contact 
   ADD CONSTRAINT tb_contacts_fk FOREIGN KEY ("nom_librairie")
-      REFERENCES "Librairie".tb_librairie_presse ("nom_librairie") MATCH SIMPLE
+      REFERENCES "Librairie".tb_librairie_presse ("entreprise") MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION;
       
 -- object: "Librairie".tb_livre | type: TABLE --
@@ -181,11 +181,11 @@ COMMENT ON CONSTRAINT num_livre_contact_pk ON "Librairie".tb_envoi_livre  IS 'nu
 ALTER TABLE "Librairie".tb_envoi_livre OWNER TO "Librairie";
 -- ddl-end --
 
--- object: "Librairie".entreprise | type: VIEW --
+-- object: "Librairie".entreprise | type: VIEW -- 
 DROP VIEW IF EXISTS "Librairie".entreprise CASCADE;
 CREATE VIEW "Librairie".entreprise
 AS 
-
+ 
 SELECT
    ent.*,
    contact.nom_contact AS nom_contact,
@@ -193,6 +193,7 @@ SELECT
    livre.genre AS genre,
    livre.sp AS sp
 FROM
+   "Librairie".tb_librairie_presse AS ent,
    "Librairie".tb_contact AS contact,
    "Librairie".tb_livre AS livre;
 -- ddl-end --

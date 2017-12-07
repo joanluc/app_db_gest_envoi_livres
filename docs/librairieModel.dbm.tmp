@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.0-alpha1" last-position="173,193" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<role name="Librairie">
+	<comment><![CDATA[Groupe Librairie]]></comment>
+</role>
+
+<role name="morgane"
+      replication="true"
+      inherit="true"
+      login="true"
+      encrypted="true"
+      password="M1ddl3H34rt">
+	<roles names="&quot;Librairie&quot;" role-type="admin" />
+</role>
+
+<role name="joanluc"
+      superuser="true"
+      createdb="true"
+      replication="true"
+      createrole="true"
+      inherit="true"
+      login="true"
+      encrypted="true"
+      password="1v1L4n++">
+	<roles names="postgres" role-type="member" />
+</role>
+
+<database name="new_database">
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="Librairie" rect-visible="true" fill-color="#e1e1e1">
+	<role name="postgres"/>
+	<appended-sql><![CDATA[SELECT * FROM tb_contact;]]></appended-sql>
+</schema>
+
+<table name="tb_contact">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="postgres"/>
+	<tablespace name="pg_default"/>
+	<comment><![CDATA[Table des contacts]]></comment>
+	<appended-sql><![CDATA[INSERT INTO table (nom_contact,structure,adresse_perso,cp_ville,telephone,email) VALUES ("joanluc","oc.linux","6 allée des lapins","33125 Hostens","0622465125","joanluc.laborda@free.fr");]]></appended-sql>
+	<position x="460" y="220"/>
+	<column name="nom_contact" not-null="true">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="structure">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="adresse_perso">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="cp_ville">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="telefone">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="email" default-value="nom@domaine">
+		<type name="character varying" length="0"/>
+	</column>
+	<constraint name="tb_contact_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_contact">
+		<columns names="nom_contact" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="tb_librairie_presse">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="440" y="600"/>
+	<column name="nom_librairie" not-null="true">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="adresse_librairie">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="cp_ville">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="tel_lib_presse">
+		<type name="character varying" length="13"/>
+	</column>
+	<column name="email" default-value="nom@domaine">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="representant">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="groupement">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="remarque">
+		<type name="text" length="0"/>
+	</column>
+	<column name="type_entreprise">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[Librairie / Presse / Centre culturel]]></comment>
+	</column>
+	<column name="envoi_systematique" not-null="true" default-value="False">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[envoi systématique : « all » ou par genre]]></comment>
+	</column>
+	<column name="envoi_genre">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[Envoi par genre]]></comment>
+	</column>
+	<constraint name="tb_libpresse_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_librairie_presse">
+		<columns names="nom_librairie" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="tb_livre">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="1560" y="680"/>
+	<column name="titre_livre" not-null="true">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="genre" not-null="true">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[Sci-Fi/Policier/Roman]]></comment>
+	</column>
+	<column name="sp" not-null="true">
+		<type name="boolean" length="0"/>
+		<comment><![CDATA[Service de presse : envoi systématique]]></comment>
+	</column>
+	<constraint name="tb_livres_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_livre">
+		<columns names="titre_livre,genre" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="tb_envoi_livre">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="1460" y="200"/>
+	<column name="tb_livre_fk" not-null="true">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="tb_contact_fk" not-null="true">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="date_envoi">
+		<type name="date" length="0"/>
+		<comment><![CDATA[Date d'envoi du livre si envoyé, sinon NULL]]></comment>
+	</column>
+	<column name="num_livre_contact_pk" not-null="true">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[numéro d'envoi]]></comment>
+	</column>
+	<constraint name="num_livre_contact_pk" type="pk-constr" table="&quot;Librairie&quot;.tb_envoi_livre">
+		<columns names="num_livre_contact_pk" ref-type="src-columns"/>
+		<comment><![CDATA[numéro d'envoi]]></comment>
+	</constraint>
+</table>
+
+<view name="entreprise">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="980" y="620"/>
+	<reference table="&quot;Librairie&quot;.tb_librairie_presse" alias="ent"/>
+	<reference table="&quot;Librairie&quot;.tb_contact" column="nom_contact" alias="contact" column-alias="nom_contact"/>
+	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
+	<reference table="&quot;Librairie&quot;.tb_livre" column="genre" alias="livre" column-alias="genre"/>
+	<reference table="&quot;Librairie&quot;.tb_livre" column="sp" alias="livre" column-alias="sp"/>
+	<expression type="select-exp">0,1,2,3,4</expression>
+	<expression type="from-exp">1,2,3,4</expression>
+</view>
+
+<relationship name="rel_entreprise_tb_librairie_presse" type="reltv"
+	 src-table="&quot;Librairie&quot;.entreprise"
+	 dst-table="&quot;Librairie&quot;.tb_librairie_presse"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_entreprise_tb_contact" type="reltv"
+	 src-table="&quot;Librairie&quot;.entreprise"
+	 dst-table="&quot;Librairie&quot;.tb_contact"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_entreprise_tb_livre" type="reltv"
+	 src-table="&quot;Librairie&quot;.entreprise"
+	 dst-table="&quot;Librairie&quot;.tb_livre"
+	 src-required="false" dst-required="false"/>
+
+<view name="envoi">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="1420" y="480"/>
+	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
+	<reference table="&quot;Librairie&quot;.tb_librairie_presse" column="nom_librairie" alias="entreprise" column-alias="raison_sociale"/>
+	<reference table="&quot;Librairie&quot;.tb_contact" column="nom_contact" alias="contact" column-alias="nom"/>
+	<reference table="&quot;Librairie&quot;.tb_contact" column="adresse_perso" alias="contact" column-alias="adresse"/>
+	<reference table="&quot;Librairie&quot;.tb_contact" column="cp_ville" alias="contact" column-alias="ville"/>
+	<expression type="select-exp">0,1,2,3,4</expression>
+	<expression type="from-exp">0,1,2,3,4</expression>
+</view>
+
+<relationship name="rel_envoi_tb_livre" type="reltv"
+	 src-table="&quot;Librairie&quot;.envoi"
+	 dst-table="&quot;Librairie&quot;.tb_livre"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_envoi_tb_librairie_presse" type="reltv"
+	 src-table="&quot;Librairie&quot;.envoi"
+	 dst-table="&quot;Librairie&quot;.tb_librairie_presse"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_envoi_tb_contact" type="reltv"
+	 src-table="&quot;Librairie&quot;.envoi"
+	 dst-table="&quot;Librairie&quot;.tb_contact"
+	 src-required="false" dst-required="false"/>
+
+<view name="contact">
+	<schema name="&quot;Librairie&quot;"/>
+	<role name="&quot;Librairie&quot;"/>
+	<position x="1026" y="308"/>
+	<reference table="&quot;Librairie&quot;.tb_contact" alias="contact"/>
+	<reference table="&quot;Librairie&quot;.tb_librairie_presse" column="nom_librairie" alias="entreprise" column-alias="raison_sociale"/>
+	<reference table="&quot;Librairie&quot;.tb_livre" column="titre_livre" alias="livre" column-alias="titre"/>
+	<reference table="&quot;Librairie&quot;.tb_envoi_livre" column="date_envoi" alias="envoi" column-alias="date"/>
+	<expression type="select-exp">0,1,2,3</expression>
+	<expression type="from-exp">0,1,2,3</expression>
+</view>
+
+<relationship name="rel_contact_tb_contact" type="reltv"
+	 src-table="&quot;Librairie&quot;.contact"
+	 dst-table="&quot;Librairie&quot;.tb_contact"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_contact_tb_librairie_presse" type="reltv"
+	 src-table="&quot;Librairie&quot;.contact"
+	 dst-table="&quot;Librairie&quot;.tb_librairie_presse"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_contact_tb_livre" type="reltv"
+	 src-table="&quot;Librairie&quot;.contact"
+	 dst-table="&quot;Librairie&quot;.tb_livre"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_contact_tb_envoi_livre" type="reltv"
+	 src-table="&quot;Librairie&quot;.contact"
+	 dst-table="&quot;Librairie&quot;.tb_envoi_livre"
+	 src-required="false" dst-required="false"/>
+
+<constraint name="tb_contact_fk_tb_libp" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_librairie_presse" table="&quot;Librairie&quot;.tb_contact">
+	<columns names="structure" ref-type="src-columns"/>
+	<columns names="nom_librairie" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="tb_libp_fk_contact" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_contact" table="&quot;Librairie&quot;.tb_librairie_presse">
+	<columns names="representant" ref-type="src-columns"/>
+	<columns names="nom_contact" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="tb_livre_genresp_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_livre" table="&quot;Librairie&quot;.tb_librairie_presse">
+	<columns names="envoi_systematique,envoi_genre" ref-type="src-columns"/>
+	<columns names="genre,sp" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="tb_livre_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_livre" table="&quot;Librairie&quot;.tb_envoi_livre">
+	<columns names="tb_livre_fk" ref-type="src-columns"/>
+	<columns names="titre_livre" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="tb_contact_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="&quot;Librairie&quot;.tb_contact" table="&quot;Librairie&quot;.tb_envoi_livre">
+	<columns names="tb_livre_fk" ref-type="src-columns"/>
+	<columns names="nom_contact" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_tb_contact_tb_librairie_presse" type="relfk"
+	 src-table="&quot;Librairie&quot;.tb_contact"
+	 dst-table="&quot;Librairie&quot;.tb_librairie_presse"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_tb_envoi_livre_tb_livre" type="relfk"
+	 src-table="&quot;Librairie&quot;.tb_envoi_livre"
+	 dst-table="&quot;Librairie&quot;.tb_livre"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_tb_envoi_livre_tb_contact" type="relfk"
+	 src-table="&quot;Librairie&quot;.tb_envoi_livre"
+	 dst-table="&quot;Librairie&quot;.tb_contact"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_tb_librairie_presse_tb_livre" type="relfk"
+	 src-table="&quot;Librairie&quot;.tb_librairie_presse"
+	 dst-table="&quot;Librairie&quot;.tb_livre"
+	 src-required="false" dst-required="false"/>
+
+<permission>
+	<object name="&quot;Librairie&quot;" type="schema"/>
+	<roles names="&quot;Librairie&quot;"/>
+	<privileges usage="grant-op"/>
+</permission>
+<permission>
+	<object name="&quot;Librairie&quot;" type="schema"/>
+	<roles names="morgane"/>
+	<privileges create="true" usage="true"/>
+</permission>
+</dbmodel>
