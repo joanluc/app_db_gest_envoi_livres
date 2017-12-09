@@ -84,7 +84,7 @@ CREATE TABLE "Librairie".tb_contact
   "email" character varying, 
   "nbr_autres_struct" smallint,
   "autres_structures" character varying,
-  CONSTRAINT tb_contacts_pk UNIQUE ("nom_contact")
+  CONSTRAINT tb_contacts_pk PRIMARY KEY ("nom_contact") 
 )
 WITH (
   OIDS=FALSE
