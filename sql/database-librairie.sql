@@ -78,8 +78,8 @@ CREATE TABLE "Librairie".tb_contact
 (
   "nom_contact" character varying NOT NULL, 
   "entreprise" character varying, 
-  "Adresse_perso" character varying,
-  "cp_villes" character varying,
+  "adresse_perso" character varying,
+  "cp_ville" character varying,
   "telefone" character varying,
   "email" character varying, 
   "nbr_autres_struct" smallint,
