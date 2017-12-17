@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 Created on Mon Aug 14 23:07:17 2017
@@ -44,7 +45,7 @@ class AppBDgestEnvoiLivres :
         """
         Constructeur
         option = "ajout", "recherche", "envoi" par défaut
-        typeBase="CVS" ou "postgresql", "postgresql" par défaut
+        typeBase="CVS","sqlite" ou "postgresql", "postgresql" par défaut
         dbSrv="localhost"
         dbnam="Librairie"
         """
@@ -54,7 +55,7 @@ class AppBDgestEnvoiLivres :
         self.utilisateur=utilisateur
         if (u_secret==""):
             self.u_secret=getpass.getpass()         
-        self.requeteSql=""
+        self.requestaSql=""
         self.dbSrv=dbSrv
         self.dbnam=dbnam
         print(format([self.typeBase,self.utilisateur,self.nomCherche,self.option]))
@@ -73,16 +74,16 @@ class AppBDgestEnvoiLivres :
         with open(tb_FiCvs,"r") as fcvs :
             data=csv.DictReader(fcvs)
             
-        if (self.requeteSql=="SELECT *") :
+        if (self.requestaSql=="SELECT *") :
             # Opérations les plus courantes : lecture et recherche d'informations dans le fichier
             # analyse de la requête SQL "SELECT liste_de_champs_CVS FROM liste_de_tables_CVS WHERE condition"
-            requeteSql=str(self.requeteSql)
-            DISTINCT=requeteSql.find("DISTINCT")
-            FROM=requeteSql.find("FROM")
-            WHERE=requeteSql.find("WHERE")
-            AND=requeteSql.find("AND")
-            OR=requeteSql.find("OR")
-            NOT=requeteSql.find("NOT")
+            requestaSql=str(self.requestaSql)
+            DISTINCT=requestaSql.find("DISTINCT")
+            FROM=requestaSql.find("FROM")
+            WHERE=requestaSql.find("WHERE")
+            AND=requestaSql.find("AND")
+            OR=requestaSql.find("OR")
+            NOT=requestaSql.find("NOT")
             # data=fcvs.readline
             
             if (FROM):
@@ -112,16 +113,16 @@ class AppBDgestEnvoiLivres :
                         SELECT listeColonnes WHERE NOT Condition
                         """
                     # index 27, OR and NOT
-            # listeChamps=requeteSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
+            # listeChamps=requestaSql.split()[2] # quand on n'a qu'un champ à sélectionner ça marche sinon il faut sélectionner entre 2 et la position de "FROM"
             for colonne in data :
                 print (colonne)
             return(data)
-        elif (self.requeteSql=="INSERT *") :
+        elif (self.requestaSql=="INSERT *") :
             # Opérations les plus simples : ajout de nouvelles données dans le fichier
             # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_donnees_CVS)"
-            nv_data=self.requeteSql()
+            nv_data=self.requestaSql()
             fcvs.write(nv_data)
-        elif (self.requeteSql=="UPDATE *") :
+        elif (self.requestaSql=="UPDATE *") :
             # Opérations complexes : recherche d'une donnée à modifier et écriture des modificatioons
             # analyse de la requête SQL "INSERT INTO table  (liste_de_champs_CVS) VALUE (liste_de_tables_CVS)"
             data=fcvs.readline
@@ -140,34 +141,60 @@ class AppBDgestEnvoiLivres :
         if (self.typeBase == "CVS"):
             # dans tous les cas le nom de la table impliquée dans la requête sera 
             reponses=self.NoSQL(tb_FiCvs)
-        else :
-            if (self.typeBase == "postgresql"):
-                try :
-                    pgConnect = psycopg2.connect(database=self.dbnam, user=self.utilisateur, password=self.u_secret)
-                except :
-                    # Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
-                    # self.errDB(Message)
-                    print('pgConnect = psycopg2.connect(database="Librairie", \
-                                                        user=self.utilisateur, \
-                                                        password=self.u_secret')
-                try :
-                    curseur=pgConnect.cursor()
-                    curseur.execute(self.requeteSql)
-                    reponses = curseur.fetchall()
-                    return (reponses)
-                except :
-                    # Message='curseur=pgConnect.cursor;curseur.execute(self.requeteSql)'
-                    # print(Message)
-                    # self.errDB(Message)
-                    print('Erreur : curseur=pgConnect.cursor() \
-                           curseur.execute(self.requeteSql) \
-                           reponses = curseur.fetchall()')
-            else :
-                # Message="Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée"
+        elif (self.typeBase == "sqlite"):
+            
+            import sqlite3
+            cadena_connec = sqlite3.connect('{self.dbnam}')
+            curseur = cadena_connec.cursor()
+            curseur.execute(self.requestaSql)
+            cadena_connec.commit()
+            cadena_connec.close()
+
+        elif (self.typeBase == "postgresql"):
+            # conn_string = "host='localhost' dbname='my_database' user='postgres' password='secret'"
+            # conn = psycopg2.connect(conn_string)
+            cadena_connec = "database='{self.dbnam}' user='{self.utilisateur}' password='{self.u_secret}'"
+            print("pgConnect = psycopg2.connect({cadena_connec})")
+            try :
+                pgConnect = psycopg2.connect(cadena_connec)
+            except :
+                # Message='pgConnect = psycopg2.connect(database="Librairie", user=self.utilisateur, password=self.u_secret)'                   
                 # self.errDB(Message)
-                print("Usage : \
-                      AppBDgestEnvoiLivres nomCherche, utilisateur, option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée")
-    
+               print('pgConnect = psycopg2.connect(database=self.dbnam, \
+                                                   user=self.utilisateur, \
+                                                   password=self.u_secret')
+            try :
+                curseur=pgConnect.cursor()
+                curseur.execute(self.requestaSql)
+                reponses = curseur.fetchall()
+                return (reponses)
+            except :
+                # Message='curseur=pgConnect.cursor;curseur.execute(self.requestaSql)'
+                # print(Message)
+                # self.errDB(Message)
+                print('Erreur : curseur=pgConnect.cursor() \
+                       curseur.execute(self.requestaSql) \
+                       reponses = curseur.fetchall()')
+        else :
+            # Message="Usage : AppBDgestEnvoiLivres nomCherche,utilisateur,option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée"
+            # self.errDB(Message)
+            print("Usage : \
+                   AppBDgestEnvoiLivres nomCherche, utilisateur, option='envoi',typeBase='CVS|Postgres' \ Fonction non implémentée")
+            
+    def protoDB(self):
+        """
+        camps es un tuple que pod contener ['contacts','structures','livres','envois']
+        """
+        if (self.typeBase == "CVS"):
+            self.dbnam="cvsdata"
+            self.taulas=["tb_Contacts.cvs","tb_Structures.cvs","tb_Livres.cvs","tb_Envois.cvs"]
+        elif (self.typeBase == "sqlite"): 
+            self.dbnam="Librairie.db" # Nomi del fiquier que conten la DB 
+            self.taulas=["tb_Contacts","tb_Structures","tb_Livres","tb_Envois"]
+        else:
+            self.dbnam="Librairie" # Nomi dela database
+            self.taulas=["tb_Contacts","tb_Structures","tb_Livres","tb_Envois"]
+                
     def recherche(self,typeRecherche):
         """
         typeRecherche = (contacts,structure)
@@ -177,29 +204,28 @@ class AppBDgestEnvoiLivres :
             FROM table_contacts 
             WHERE nom_contact MATCHES nomCherche
         """
-        if (self.typeBase == "CVS"):
-            if (typeRecherche=="contacts"):
-                tb_Recherche="dbContacts.cvs"
-            else :
-                tb_Recherche="dbStructures.cvs"
-        else :  
-            if (typeRecherche=="contacts"):
-                tb_Recherche="tb_contacts"
-            else :
-                tb_Recherche="tb_structures"
-        self.requeteSql=format("SELECT Nom_contact FROM "+tb_Recherche+"WHERE Nom_contact MATCHES "+self.nomCherche)
-        self.interrogeDataBase(tb_Recherche)
+        
+        if (typeRecherche=="contacts"):
+            tb_Recherche=self.taulas[0] # tb_Contacts
+        else :
+            tb_Recherche=self.taulas[1] # tb_Structures
+            
+        self.requestaSql=format("SELECT Nom_contact FROM "+tb_Recherche+"\
+                                 WHERE Nom_contact MATCHES "+self.nomCherche)
+        ResRecherche=self.interrogeDataBase(tb_Recherche)
+        return ResRecherche
     
     def rechercheLivre(self):
         """
         Recherche un ou plusieurs livres dans la base de données
         """
-        if (self.typeBase == "CVS"):
-            tb_livre=input("Nom fichier CVS ?")
-        else : 
-            tb_livre="tb_livres"
-        self.requeteSql=format("SELECT * FROM "+tb_livre+"WHERE Titre_livre MATCHES "+self.nomCherche)  
-        self.interrogeDataBase(tb_livre)
+        # if (self.typeBase == "CVS"):
+        #    tb_livre=input("Nom fichier CVS ?")
+        
+        tb_livre=self.taulas[2] # tb_livre'
+        self.requestaSql=format("SELECT * FROM "+tb_livre+"WHERE Titre_livre MATCHES "+self.nomCherche)  
+        infosLibre=self.interrogeDataBase(tb_livre)
+        return infosLibre
     
     def ajoutContact(self,listeInfoContact):
         """
@@ -225,12 +251,19 @@ class AppBDgestEnvoiLivres :
 	3		permettre l'association d'un même contact avec plusieurs structures	
         lier les fiches associées pour pouvoir y accéder en passant de l’une à l’autre
         """
-        if (self.typeBase == "CVS"):
-            tb_contacts="tbContacts.cvs"
-        else : 
-            tb_contacts='"Librairie".tb_contacts'
-        self.requeteSql=format('INSERT INTO '+tb_contacts+' (Nom_contact,structure,Adresse_perso,Tel,eMail,autresStructures) VALUES ('+listeInfoContact[0]+','+listeInfoContact[1]+','+listeInfoContact[2]+','+listeInfoContact[3]+','+listeInfoContact[4]+','+listeInfoContact[5]+');')
-        resInsert=self.interrogeDataBase(tb_contacts)
+        Nom_contact=listeInfoContact[0]
+        structure=listeInfoContact[1]
+        Adresse_perso=listeInfoContact[2]
+        Tel=listeInfoContact[3]
+        eMail=listeInfoContact[4]
+        autresStructures=listeInfoContact[5]
+        tb_contacts=self.taulas[0]
+        
+        self.requestaSql=format('INSERT INTO '+tb_contacts+' \
+                                 (Nom_contact,structure,Adresse_perso,Tel,eMail,autresStructures) \
+                                 VALUES ('+Nom_contact+','+structure+','+Adresse_perso+','+Tel+','+eMail+','+autresStructures+');')
+        resInsContact=self.interrogeDataBase(tb_contacts)
+        return resInsContact
     
     def ajoutStructure(self,listeInfoStructure):
         """
@@ -267,13 +300,23 @@ class AppBDgestEnvoiLivres :
 	1		permettre l'association d'un même contact avec plusieurs structures	
         un seul envoi pour toutes les fiches associées
         """
-        
-        if (self.typeBase == "CVS"):
-            tb_structures="cvsdata/tb_structures.cvs"
-        else : 
-            tb_structures='"Librairie".tb_structures'
-        self.requeteSql=format('INSERT INTO '+tb_structures+' (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,eMail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) VALUES  ('+listeInfoStructure[0]+','+listeInfoStructure[1]+','+listeInfoStructure[2]+','+listeInfoStructure[3]+','+listeInfoStructure[4]+','+listeInfoStructure[5]+','+listeInfoStructure[6]+','+listeInfoStructure[7]+','+listeInfoStructure[8]+','+listeInfoStructure[9]+');')
-        self.interrogeDataBase(tb_structures)
+        Nom_librairie=listeInfoStructure[0]
+        Adresse_lib=listeInfoStructure[1]
+        cp_ville=listeInfoStructure[2]
+        Tel_lib=listeInfoStructure[3]
+        eMail=listeInfoStructure[4]
+        Repre=listeInfoStructure[5]
+        Groupement=listeInfoStructure[6]
+        Remarque=listeInfoStructure[7]
+        typ_entreprise=listeInfoStructure[8]
+        envoi_sys=listeInfoStructure[9]
+        tb_structures=self.taulas[1]
+        self.requestaSql=format('INSERT INTO '+tb_structures+' \
+                                 (Nom_librairie,Adresse_lib,cp_ville,Tel_lib,eMail,Repre,Groupement,Remarque,typ_entreprise,envoi_sys) \
+                                 VALUES  ('+Nom_librairie+','+Adresse_lib+','+cp_ville+','+Tel_lib+','+eMail+','+Repre+',\
+                                          '+Groupement+','+Remarque+','+typ_entreprise+','+envoi_sys+');')
+        resInsStructure=self.interrogeDataBase(tb_structures)
+        return resInsStructure
     
     def ajoutLivre(self,listeInfoLivre):
         """
@@ -293,30 +336,34 @@ class AppBDgestEnvoiLivres :
      
         Recherche un ou plusieurs livres dans la base de données
         """
+        titreLivre=listeInfoLivre[0]
+        genre=listeInfoLivre[1]
+        sp=str(listeInfoLivre[2])
+        tb_livres_fk,tb_contact_fk=None,None
+        date_envoi=0
+        # num_liv_contact_pk : clé primaire
+        num_liv_contact_pk=None
         
-        if (self.typeBase == "CVS"):
-            tb_livre="tb_livre.cvs"
-            tb_envoi="tb_envoi.cvs"
-            # tb_structures="tb_structures.cvs"
-            # tb_contacts="tbContacts.cvs"
-        else : 
-            tb_livre='"Librairie".tb_livre'
-            tb_envoi='"Librairie"tb_envoi.cvs'
-            # tb_structures='"Librairie".tb_structures'
-            # tb_contacts='"Librairie".tb_contacts'
+        tb_livre=self.taulas[2]
+        tb_envoi=self.taulas[3]
             
         print (format(listeInfoLivre[0]))
         print (format(listeInfoLivre[1]))
         print (format(listeInfoLivre[2]))
-        print (format('INSERT INTO '+tb_livre+' (titreLivre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+str(listeInfoLivre[2])+');'))
-        self.requeteSql=format('INSERT INTO '+tb_livre+' (titre_livre,genre,SP) VALUES  ('+listeInfoLivre[0]+','+listeInfoLivre[1]+','+listeInfoLivre[2]+');')
+        print (format('INSERT INTO '+tb_livre+' (titreLivre,genre,sp) VALUES  ('+titreLivre+','+genre+','+sp+');'))
+        self.requestaSql=format('INSERT INTO '+tb_livre+' (titre_livre,genre,SP) VALUES  ('+titreLivre+','+genre+','+sp+');')
         self.interrogeDataBase("tb_livre")
         if (listeInfoLivre[2]==True) : 
             # SP est vrai, on doit écrire des infos dans tb_enboi
-            self.requeteSql=format('INSERT INTO '+tb_envoi+' (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');')
+            tb_livres_fk=[titreLivre,genre] # valor de la clau primaria dens la taula libre
+            tb_contact_fk #
+            date_envoi=0
+            # num_liv_contact_pk : clé primaire
+            num_liv_contact_pk=None
+            self.requestaSql=format('INSERT INTO '+tb_envoi+' (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');')
             self.interrogeDataBase("tb_envoi")
-        # self.requeteSql=format('UPDATE '+tb_structures+' SET   SP 
-        # self.requeteSql=format('UPDATE '+tb_contacts+' SET 
+        # self.requestaSql=format('UPDATE '+tb_structures+' SET   SP 
+        # self.requestaSql=format('UPDATE '+tb_contacts+' SET 
         
     def envoiLivre(self,titre,SP):
         """
@@ -374,28 +421,33 @@ class AppBDgestEnvoiLivres :
         tb_livres_fk,tb_contact_fk,date_envoi=None,None,None  # Clés étrangères et index date pour insert dans tb_envoi
         SP,structure,Adresse_perso,Tel,eMail=None,None,None,None
         
+        
+        tb_livre=self.taulas[2]
+        tb_envoi=self.taulas[3]
+        tb_contact=self.taulas[0]
+        
         # Vérification de l'existance du livre dans la table des livres
-        self.requeteSql='SELECT "Titre" FROM "Librairie".tb_livre WHERE tb_livre.Titre MATCHES '+titre+';'
-        if (self.interrogeDataBase("tb_livre") == False) :
+        self.requestaSql='SELECT "Titre" FROM '+tb_livre+' WHERE tb_livre.Titre MATCHES '+titre+';'
+        if (self.interrogeDataBase(tb_livre) == False) :
             # Le titre n'existe pas dans la tablle des livres, il doit être ajouté
-            self.requeteSql='INSERT INTO "Librairie".tb_livre (Titre) Value ('+titre+');'
-            self.interrogeDataBase("tb_livre")
+            self.requestaSql='INSERT INTO '+tb_livre+' (Titre) Value ('+titre+');'
+            self.interrogeDataBase(tb_livre)
         
         # Vérification de l'existance du contact dans la table des contacts
         tb_contact='"Librairie".tb_contact'
-        self.requeteSql='SELECT "Nom_contact" FROM "Librairie".tb_contact WHERE tb_contact.Nom_contact MATCHES '+SP+';'
+        self.requestaSql='SELECT "Nom_contact" FROM '+tb_contact+' WHERE tb_contact.Nom_contact MATCHES '+SP+';'
         if (self.interrogeDataBase(tb_contact) == False) :
             # Le contact n'existe pas dans la tablle des contacts il doit être ajouté à la table
             listeInfoContact=(SP,structure,Adresse_perso,Tel,eMail)
             self.ajoutContacts(listeInfoContact)
             
         # Définir le numéro d'envoi qui doit être unique dans la table, on recherche le maxi et on l'incrémente
-        self.requeteSql='SELECT MAX "num_liv_contact_pk" FROM  "Librairie".tb_envoi AS maxNumEnvoi;'
-        maxNumEnvoi=self.interrogeDataBase("tb_envoi")
+        self.requestaSql='SELECT MAX "num_liv_contact_pk" FROM  '+tb_envoi+' AS maxNumEnvoi;'
+        maxNumEnvoi=self.interrogeDataBase(tb_envoi)
         num_liv_contact_pk = maxNumEnvoi + 1
-        self.requeteSql='INSERT INTO "Librairie".tb_envoi (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');'
-        self.interrogeDataBase("tb_envoi")
-        # self.requeteSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "Librairie".tb_envoi WHERE tb_envoi.Titre MATCHES '+self.nomCherche+';'
+        self.requestaSql='INSERT INTO '+tb_envoi+' (tb_livres_fk,tb_contact_fk,date_envoi,num_liv_contact_pk) VALUES ('+tb_livres_fk+','+tb_contact_fk+','+date_envoi+','+num_liv_contact_pk+');'
+        self.interrogeDataBase(tb_envoi)
+        # self.requestaSql='SELECT "Titre,Entreprise,Contact,Adresse,CP,Ville Pays" from FROM "Librairie".tb_envoi WHERE tb_envoi.Titre MATCHES '+self.nomCherche+';'
         # self.interrogeDataBase("tb_envoi")
         
     
@@ -429,6 +481,7 @@ def test_AppBDgestEnvoiLivres (envoi=AppBDgestEnvoiLivres):
 if __name__=="__main__" :
     ceLivre=responsa("Titre du livre ? \n")
     Utilisateur=responsa("Nom utilisateur ? \n")
+    secret=getpass.getpass(prompt="Mot de santa clara "+Utilisateur,stream=None)
     option=responsa("Option ? (ajout, recherche, envoi (défaut) \n")
     if (option=="a*") :
         option="ajout"
